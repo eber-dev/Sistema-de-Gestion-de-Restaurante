@@ -4,19 +4,32 @@
  */
 package restaurante.vista;
 
+import javax.swing.JOptionPane;
+import restaurante.controlador.CategoriaControlador;
+import restaurante.modelo.Categoria;
+
 /**
  *
  * @author JosueRM
  */
 public class FrmCategorias extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmCategorias.class.getName());
+    private final CategoriaControlador controlador = new CategoriaControlador();
 
     /**
      * Creates new form FrmCategorias
      */
     public FrmCategorias() {
+
         initComponents();
+        this.setTitle("Categorias");
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
+
+        configurarTabla();
+        configurarEventos();
+        actualizarTabla();
     }
 
     /**
@@ -192,11 +205,108 @@ public class FrmCategorias extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+    private void configurarTabla() {
+        tblCategorias.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nombre", "Descripción"}
+        ) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        });
+    }
+
+    private void configurarEventos() {
+        btnGuardar.addActionListener(e -> onGuardar());
+        btnEditar.addActionListener(e -> onEditar());
+        btnEliminar.addActionListener(e -> onEliminar());
+        btnLimpiar.addActionListener(e -> limpiar());
+
+        tblCategorias.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                seleccionarFila();
+            }
+        });
+    }
+
+    private void onGuardar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            controlador.guardar(id,
+                    txtNombre.getText().trim(),
+                    txtDescripcion.getText().trim());
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEditar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            controlador.actualizar(id,
+                    txtNombre.getText().trim(),
+                    txtDescripcion.getText().trim());
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEliminar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            controlador.eliminar(id);
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void actualizarTabla() {
+        javax.swing.table.DefaultTableModel m
+                = (javax.swing.table.DefaultTableModel) tblCategorias.getModel();
+        m.setRowCount(0);
+        for (Categoria c : controlador.listar()) {
+            m.addRow(new Object[]{c.getId(), c.getNombre(), c.getDescripcion()});
+        }
+    }
+
+    private void seleccionarFila() {
+        int f = tblCategorias.getSelectedRow();
+        if (f == -1) {
+            return;
+        }
+        txtId.setText(String.valueOf(tblCategorias.getValueAt(f, 0)));
+        txtNombre.setText(String.valueOf(tblCategorias.getValueAt(f, 1)));
+        txtDescripcion.setText(String.valueOf(tblCategorias.getValueAt(f, 2)));
+    }
+
+    private void limpiar() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtDescripcion.setText("");
+        tblCategorias.clearSelection();
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
