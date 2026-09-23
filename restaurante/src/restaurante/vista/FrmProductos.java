@@ -4,19 +4,36 @@
  */
 package restaurante.vista;
 
+import javax.swing.JOptionPane;
+import restaurante.controlador.CategoriaControlador;
+import restaurante.controlador.ProductoControlador;
+import restaurante.modelo.Categoria;
+import restaurante.modelo.Producto;
+
 /**
  *
  * @author JosueRM
  */
 public class FrmProductos extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmProductos.class.getName());
+
+    private final ProductoControlador controlador = new ProductoControlador();
+    private final CategoriaControlador categoriaControlador = new CategoriaControlador();
 
     /**
      * Creates new form Productos
      */
     public FrmProductos() {
         initComponents();
+        this.setTitle("Productos");
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
+
+        configurarTabla();
+        configurarEventos();
+        cargarCategorias();
+        actualizarTabla();
     }
 
     /**
@@ -234,11 +251,167 @@ public class FrmProductos extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+    private void configurarTabla() {
+        tblProductos.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nombre", "Descripción", "Precio", "Categoría", "Disponible"}
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        });
+    }
+
+    private void configurarEventos() {
+        btnGuardar.addActionListener(e -> onGuardar());
+        btnEditar.addActionListener(e -> onEditar());
+        btnEliminar.addActionListener(e -> onEliminar());
+        btnLimpiar.addActionListener(e -> limpiar());
+
+        tblProductos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                seleccionarFila();
+            }
+        });
+    }
+
+    /**
+     * Llena el combo con los nombres de las categorías existentes.
+     */
+    private void cargarCategorias() {
+        cmbCategoria.removeAllItems();
+        for (Categoria c : categoriaControlador.listar()) {
+            cmbCategoria.addItem(c.getNombre());
+        }
+    }
+
+    /**
+     * Devuelve la categoría cuyo nombre está seleccionado en el combo.
+     */
+    private Categoria categoriaSeleccionada() {
+        String nombre = (String) cmbCategoria.getSelectedItem();
+        if (nombre == null) {
+            return null;
+        }
+        for (Categoria c : categoriaControlador.listar()) {
+            if (c.getNombre().equals(nombre)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private void onGuardar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            double precio = Double.parseDouble(txtPrecio.getText().trim());
+
+            controlador.guardar(
+                    id,
+                    txtNombre.getText().trim(),
+                    txtDescripcion.getText().trim(),
+                    precio,
+                    chkDisponible.isSelected(),
+                    categoriaSeleccionada());
+
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "ID o Precio tienen formato inválido", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEditar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            double precio = Double.parseDouble(txtPrecio.getText().trim());
+
+            controlador.actualizar(
+                    id,
+                    txtNombre.getText().trim(),
+                    txtDescripcion.getText().trim(),
+                    precio,
+                    chkDisponible.isSelected(),
+                    categoriaSeleccionada());
+
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "ID o Precio tienen formato inválido", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEliminar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            controlador.eliminar(id);
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser numérico", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void actualizarTabla() {
+        javax.swing.table.DefaultTableModel modelo
+                = (javax.swing.table.DefaultTableModel) tblProductos.getModel();
+        modelo.setRowCount(0);
+        for (Producto p : controlador.listar()) {
+            modelo.addRow(new Object[]{
+                p.getId(),
+                p.getNombre(),
+                p.getDescripcion(),
+                p.getPrecio(),
+                p.getCategoria() != null ? p.getCategoria().getNombre() : "",
+                p.isDisponible() ? "Sí" : "No"
+            });
+        }
+    }
+
+    private void seleccionarFila() {
+        int fila = tblProductos.getSelectedRow();
+        if (fila == -1) {
+            return;
+        }
+
+        txtId.setText(String.valueOf(tblProductos.getValueAt(fila, 0)));
+        txtNombre.setText(String.valueOf(tblProductos.getValueAt(fila, 1)));
+        txtDescripcion.setText(String.valueOf(tblProductos.getValueAt(fila, 2)));
+        txtPrecio.setText(String.valueOf(tblProductos.getValueAt(fila, 3)));
+        cmbCategoria.setSelectedItem(String.valueOf(tblProductos.getValueAt(fila, 4)));
+        chkDisponible.setSelected("Sí".equals(tblProductos.getValueAt(fila, 5)));
+    }
+
+    private void limpiar() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtDescripcion.setText("");
+        txtPrecio.setText("");
+        chkDisponible.setSelected(false);
+        if (cmbCategoria.getItemCount() > 0) {
+            cmbCategoria.setSelectedIndex(0);
+        }
+        tblProductos.clearSelection();
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
