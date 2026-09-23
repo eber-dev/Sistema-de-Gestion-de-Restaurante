@@ -4,12 +4,16 @@
  */
 package restaurante.vista;
 
+import javax.swing.JOptionPane;
+import restaurante.app.Aplicacion;
+import restaurante.modelo.Cliente;
+
 /**
  *
  * @author JosueRM
  */
 public class FrmClientes extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmClientes.class.getName());
 
     /**
@@ -17,6 +21,13 @@ public class FrmClientes extends javax.swing.JFrame {
      */
     public FrmClientes() {
         initComponents();
+        this.setTitle("Clientes");
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
+
+        configurarTabla();
+        configurarEventos();
+        actualizarTabla();
     }
 
     /**
@@ -226,11 +237,130 @@ public class FrmClientes extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+    private void configurarTabla() {
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nombre", "Apellido", "Teléfono", "Correo", "Dirección"}
+        ) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        });
+    }
+
+    private void configurarEventos() {
+        btnGuardar.addActionListener(e -> onGuardar());
+        btnEditar.addActionListener(e -> onEditar());
+        btnEliminar.addActionListener(e -> onEliminar());
+        btnLimpiar.addActionListener(e -> limpiar());
+        tblClientes.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                seleccionarFila();
+            }
+        });
+    }
+
+    private Cliente leerFormulario(int id) {
+        return new Cliente(
+                id,
+                txtNombre.getText().trim(),
+                txtApellido.getText().trim(),
+                txtTelefono.getText().trim(),
+                txtCorreo.getText().trim(),
+                txtDireccion.getText().trim());
+    }
+
+    private void onGuardar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            if (Aplicacion.cliente().buscarPorId(id) != null) {
+                JOptionPane.showMessageDialog(this, "Ya existe un cliente con ese ID");
+                return;
+            }
+            Aplicacion.cliente().guardar(leerFormulario(id));
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEditar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            if (Aplicacion.cliente().buscarPorId(id) == null) {
+                JOptionPane.showMessageDialog(this, "No existe cliente con ese ID");
+                return;
+            }
+            Aplicacion.cliente().actualizar(leerFormulario(id));
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onEliminar() {
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            Aplicacion.cliente().eliminar(id);
+            actualizarTabla();
+            limpiar();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El ID debe ser numérico",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void actualizarTabla() {
+        javax.swing.table.DefaultTableModel m
+                = (javax.swing.table.DefaultTableModel) tblClientes.getModel();
+        m.setRowCount(0);
+        for (Cliente c : Aplicacion.cliente().listar()) {
+            m.addRow(new Object[]{
+                c.getId(), c.getNombre(), c.getApellido(),
+                c.getTelefono(), c.getCorreo(), c.getDireccion()
+            });
+        }
+    }
+
+    private void seleccionarFila() {
+        int f = tblClientes.getSelectedRow();
+        if (f == -1) {
+            return;
+        }
+        txtId.setText(String.valueOf(tblClientes.getValueAt(f, 0)));
+        txtNombre.setText(String.valueOf(tblClientes.getValueAt(f, 1)));
+        txtApellido.setText(String.valueOf(tblClientes.getValueAt(f, 2)));
+        txtTelefono.setText(String.valueOf(tblClientes.getValueAt(f, 3)));
+        txtCorreo.setText(String.valueOf(tblClientes.getValueAt(f, 4)));
+        txtDireccion.setText(String.valueOf(tblClientes.getValueAt(f, 5)));
+    }
+
+    private void limpiar() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtApellido.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+        txtDireccion.setText("");
+        tblClientes.clearSelection();
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
