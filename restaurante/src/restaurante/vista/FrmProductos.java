@@ -30,6 +30,7 @@ public class FrmProductos extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         configurarTabla();
         configurarEventos();
         cargarCategorias();
