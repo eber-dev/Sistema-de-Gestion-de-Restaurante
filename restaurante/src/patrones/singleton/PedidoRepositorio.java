@@ -15,8 +15,8 @@ import restaurante.modelo.Pedido;
 
 public class PedidoRepositorio {
 
-    private static final PedidoRepositorio INSTANCIA =
-            new PedidoRepositorio();
+    private static final PedidoRepositorio INSTANCIA
+            = new PedidoRepositorio();
 
     private final List<Pedido> pedidos = new ArrayList<>();
 
@@ -34,6 +34,10 @@ public class PedidoRepositorio {
     public List<Pedido> listar() {
         return Collections.unmodifiableList(
                 new ArrayList<>(pedidos));
+    }
+
+    public boolean eliminar(String codigo) {
+        return pedidos.removeIf(p -> p.getCodigo().equals(codigo));
     }
 
     public Pedido buscarPorCodigo(String codigo) {

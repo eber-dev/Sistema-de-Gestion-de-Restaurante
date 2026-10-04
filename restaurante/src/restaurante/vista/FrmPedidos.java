@@ -422,26 +422,21 @@ public class FrmPedidos extends javax.swing.JFrame {
         // TODO add your handling code here:
         int fila = tblPedidos.getSelectedRow();
         if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un pedido de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Seleccione un pedido de la tabla.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        try {
-            String codigoSel = (String) tblPedidos.getValueAt(fila, 0);
-
-            List<restaurante.modelo.Pedido> lista = controlador.listarPedidos();
-            if (lista != null) {
-                lista.removeIf(p -> p != null && p.getCodigo() != null && p.getCodigo().equals(codigoSel));
-            }
-
-            modeloPedidos.removeRow(fila);
-
-        } catch (Exception e) {
-
-            if (fila < modeloPedidos.getRowCount()) {
-                modeloPedidos.removeRow(fila);
-            }
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Está seguro de eliminar el pedido seleccionado?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
         }
+        String codigo = (String) tblPedidos.getValueAt(fila, 0);
+        controlador.eliminarPedido(codigo);
+        actualizarTablaPedidos();
+        JOptionPane.showMessageDialog(this, "Pedido eliminado correctamente.");
 
     }//GEN-LAST:event_jButton1ActionPerformed
 

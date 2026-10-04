@@ -90,4 +90,8 @@ public class PedidoControlador {
     public List<Pedido> listarPedidos() {
         return repositorio.listar();
     }
+
+    public boolean eliminarPedido(String codigo) {
+        return repositorio.eliminar(codigo);
+    }
 }
