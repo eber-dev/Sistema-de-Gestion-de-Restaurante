@@ -16,9 +16,6 @@ import javax.swing.table.DefaultTableModel;
 import restaurante.modelo.Pedido;
 import restaurante.modelo.DetallePedido;
 import restaurante.controlador.PedidoControlador;
-import patrones.abstractfactory.AbstractFactoryPedido;
-import patrones.abstractfactory.FactoryPedidoPresencial;
-import patrones.abstractfactory.FactoryPedidoVirtual;
 
 public class FrmPedidos extends javax.swing.JFrame {
 

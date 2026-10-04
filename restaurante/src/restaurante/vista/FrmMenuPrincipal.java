@@ -33,7 +33,7 @@ public class FrmMenuPrincipal extends JFrame {
         getContentPane().setLayout(null);
         getContentPane().setBackground(new Color(240, 242, 245));
 
-        // ---------- HEADER ----------
+        // encabezado
         JPanel header = new JPanel();
         header.setBackground(new Color(31, 41, 55));
         header.setBounds(0, 0, 500, 100);
@@ -54,7 +54,7 @@ public class FrmMenuPrincipal extends JFrame {
         lblSubtitulo.setBounds(0, 55, 500, 25);
         header.add(lblSubtitulo);
 
-        // ---------- BOTONES ----------
+        // botones
         JButton btnClientes = crearBoton("Clientes",
                 UIManager.getDefaults().getColor("Actions.Blue"));
         btnClientes.setBounds(60, 140, 170, 70);
