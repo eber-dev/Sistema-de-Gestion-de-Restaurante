@@ -6,7 +6,7 @@ package restaurante;
 
 import javax.swing.SwingUtilities;
 import restaurante.app.Aplicacion;
-import restaurante.vista.FrmCategorias;
+import restaurante.vista.FrmMenuPrincipal;
 
 /**
  *
@@ -16,7 +16,7 @@ public class Main {
 
     public static void main(String[] args) {
         Aplicacion.inicializar();
-        SwingUtilities.invokeLater(()
-                -> new FrmCategorias().setVisible(true));
+
+        SwingUtilities.invokeLater(() -> new FrmMenuPrincipal().setVisible(true));
     }
 }
