@@ -26,6 +26,7 @@ public class FrmCategorias extends javax.swing.JFrame {
         this.setTitle("Categorias");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         configurarTabla();
         configurarEventos();
