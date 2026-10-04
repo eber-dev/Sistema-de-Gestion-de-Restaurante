@@ -24,6 +24,7 @@ public class FrmClientes extends javax.swing.JFrame {
         this.setTitle("Clientes");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         configurarTabla();
         configurarEventos();
