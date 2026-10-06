@@ -46,6 +46,7 @@ public class FrmVenta extends JFrame {
     private final JTable tblHistorial;
     private final DefaultTableModel modeloTabla;
     private final VentaControlador controlador;
+    private FrmPedidos frmPedidos;
 
     public FrmVenta() {
         super("Restaurante | Gestión de Ventas");
@@ -75,6 +76,11 @@ public class FrmVenta extends JFrame {
         controlador = new VentaControlador(this);
         configurarEventos();
         controlador.inicializar();
+    }
+    
+    public FrmVenta(FrmPedidos frmPedidos) {
+        this();
+        this.frmPedidos = frmPedidos;
     }
 
     public static void main(String[] args) {
@@ -193,12 +199,28 @@ public class FrmVenta extends JFrame {
         JLabel nota = new JLabel("Selecciona un pedido y método de pago para cobrar.");
         nota.setForeground(new Color(100, 116, 139));
 
-        JButton btn = boton("COBRAR Y GENERAR BOLETA", AZUL);
-        btn.addActionListener(e -> controlador.cobrar());
+        JPanel botones = new JPanel(new GridLayout(1, 2, 10, 0));
+        botones.setOpaque(false);
+
+        JButton btnVolver = boton("VOLVER A PEDIDOS", new Color(71, 85, 105));
+        btnVolver.addActionListener(e -> volverAPedidos());
+
+        JButton btnCobrar = boton("COBRAR Y GENERAR BOLETA", AZUL);
+        btnCobrar.addActionListener(e -> controlador.cobrar());
+
+        botones.add(btnVolver);
+        botones.add(btnCobrar);
 
         p.add(nota, BorderLayout.WEST);
-        p.add(btn, BorderLayout.EAST);
+        p.add(botones, BorderLayout.EAST);
         return p;
+    }
+    
+    private void volverAPedidos() {
+        if (frmPedidos != null) {
+        frmPedidos.setVisible(true);
+        this.dispose();
+        }
     }
 
     private JPanel etiqueta(String texto, java.awt.Component c) {

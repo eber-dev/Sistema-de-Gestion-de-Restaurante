@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import restaurante.modelo.Pedido;
 
-public class PedidoRepositorio {
+public class PedidoRepositorio implements restaurante.repositorio.PedidoRepositorio {
 
     private static final PedidoRepositorio INSTANCIA
             = new PedidoRepositorio();
@@ -27,10 +27,12 @@ public class PedidoRepositorio {
         return INSTANCIA;
     }
 
+    @Override
     public void guardar(Pedido pedido) {
         pedidos.add(pedido);
     }
 
+    @Override
     public List<Pedido> listar() {
         return Collections.unmodifiableList(
                 new ArrayList<>(pedidos));
@@ -40,6 +42,7 @@ public class PedidoRepositorio {
         return pedidos.removeIf(p -> p.getCodigo().equals(codigo));
     }
 
+    @Override
     public Pedido buscarPorCodigo(String codigo) {
         for (Pedido pedido : pedidos) {
             if (pedido.getCodigo().equals(codigo)) {

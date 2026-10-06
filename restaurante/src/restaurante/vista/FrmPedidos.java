@@ -134,6 +134,7 @@ public class FrmPedidos extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblPedidos = new javax.swing.JTable();
+        btnIrVentas = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -289,6 +290,10 @@ public class FrmPedidos extends javax.swing.JFrame {
 
         getContentPane().add(pnlPedidos, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 510, 500, 300));
 
+        btnIrVentas.setText("Ir a Ventas");
+        btnIrVentas.addActionListener(this::btnIrVentasActionPerformed);
+        getContentPane().add(btnIrVentas, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 560, -1, -1));
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -437,6 +442,12 @@ public class FrmPedidos extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void btnIrVentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIrVentasActionPerformed
+        FrmVenta frmVenta = new FrmVenta(this);
+        frmVenta.setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_btnIrVentasActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -467,6 +478,7 @@ public class FrmPedidos extends javax.swing.JFrame {
     private javax.swing.JButton btnClonar;
     private javax.swing.JButton btnConfirmar;
     private javax.swing.JButton btnCrearPedido;
+    private javax.swing.JButton btnIrVentas;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JComboBox<String> cbxCanal;
     private javax.swing.JButton jButton1;

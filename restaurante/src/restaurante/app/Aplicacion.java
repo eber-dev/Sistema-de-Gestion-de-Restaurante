@@ -31,7 +31,7 @@ public class Aplicacion {
             = new ProductoServicio(new ProductoRepositorioMemoria());
 
     private static final PedidoRepositorio pedidoRepositorio
-            = new PedidoRepositorioMemoria();
+            = patrones.singleton.PedidoRepositorio.getInstancia();
     private static final PedidoServicio pedidoServicio
             = new PedidoServicio(pedidoRepositorio);
 

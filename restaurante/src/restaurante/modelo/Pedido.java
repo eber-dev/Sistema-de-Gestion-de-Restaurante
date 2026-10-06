@@ -123,4 +123,9 @@ public class Pedido implements PedidoPrototype {
 
         return copia;
     }
+    
+    @Override
+    public String toString() {
+        return codigo + " - " + cliente;
+}
 }
