@@ -97,6 +97,17 @@ public class Pedido implements PedidoPrototype {
         return total;
     }
 
+    public boolean estaConfirmado() {
+        if (estado == null) {
+            return false;
+        }
+        String e = estado.trim().toLowerCase();
+        return e.equals("confirmado")
+                || e.equals("listo")
+                || e.equals("atendido")
+                || e.equals("en preparación");
+    }
+
     @Override
     public Pedido clonar() {
         Pedido copia = new Pedido(this.codigo + "-COPIA");

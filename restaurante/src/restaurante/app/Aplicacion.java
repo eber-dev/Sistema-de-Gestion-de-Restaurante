@@ -4,17 +4,21 @@
  */
 package restaurante.app;
 
+import patrones.facade.VentaFacade;
 import restaurante.implementacion.CategoriaRepositorioMemoria;
 import restaurante.implementacion.ClienteRepositorioMemoria;
+import restaurante.implementacion.PedidoRepositorioMemoria;
 import restaurante.implementacion.ProductoRepositorioMemoria;
+import restaurante.implementacion.VentaRepositorioMemoria;
+import restaurante.repositorio.PedidoRepositorio;
+import restaurante.repositorio.VentaRepositorio;
+import restaurante.servicio.BoletaServicio;
 import restaurante.servicio.CategoriaServicio;
 import restaurante.servicio.ClienteServicio;
+import restaurante.servicio.PedidoServicio;
 import restaurante.servicio.ProductoServicio;
+import restaurante.servicio.VentaServicio;
 
-/**
- *
- * @author EBER
- */
 public class Aplicacion {
 
     private static final CategoriaServicio categoriaServicio
@@ -25,6 +29,20 @@ public class Aplicacion {
 
     private static final ProductoServicio productoServicio
             = new ProductoServicio(new ProductoRepositorioMemoria());
+
+    private static final PedidoRepositorio pedidoRepositorio
+            = new PedidoRepositorioMemoria();
+    private static final PedidoServicio pedidoServicio
+            = new PedidoServicio(pedidoRepositorio);
+
+    private static final VentaRepositorio ventaRepositorio
+            = new VentaRepositorioMemoria();
+    private static final BoletaServicio boletaServicio
+            = new BoletaServicio();
+    private static final VentaServicio ventaServicio
+            = new VentaServicio(ventaRepositorio);
+    private static final VentaFacade ventaFacade
+            = new VentaFacade(ventaServicio, boletaServicio);
 
     private static boolean inicializado = false;
 
@@ -49,5 +67,17 @@ public class Aplicacion {
 
     public static ProductoServicio producto() {
         return productoServicio;
+    }
+
+    public static PedidoServicio pedido() {
+        return pedidoServicio;
+    }
+
+    public static VentaServicio venta() {
+        return ventaServicio;
+    }
+
+    public static VentaFacade ventaFacade() {
+        return ventaFacade;
     }
 }

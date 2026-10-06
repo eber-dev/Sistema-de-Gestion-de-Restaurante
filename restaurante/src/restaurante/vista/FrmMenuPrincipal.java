@@ -79,9 +79,15 @@ public class FrmMenuPrincipal extends JFrame {
         btnPedidos.addActionListener((ActionEvent e) -> new FrmPedidos().setVisible(true));
         getContentPane().add(btnPedidos);
 
+        JButton btnVentas = crearBoton("Ventas",
+                UIManager.getDefaults().getColor("Actions.Blue"));
+        btnVentas.setBounds(60, 310, 370, 55);
+        btnVentas.addActionListener((ActionEvent e) -> new FrmVenta().setVisible(true));
+        getContentPane().add(btnVentas);
+
         JButton btnSalir = new JButton("Salir del Sistema");
         btnSalir.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnSalir.setBounds(150, 350, 200, 45);
+        btnSalir.setBounds(150, 375, 200, 45);
         btnSalir.setBackground(new Color(60, 60, 60));
         btnSalir.setForeground(Color.WHITE);
         btnSalir.setFocusPainted(false);
