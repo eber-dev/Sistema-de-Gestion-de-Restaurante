@@ -53,6 +53,13 @@ public class Aplicacion {
         if (inicializado) {
             return;
         }
+
+        try {
+            restaurante.config.DatabaseInitializer.inicializar();
+        } catch (Exception ex) {
+            System.err.println("[App] No se pudo inicializar la base de datos: " + ex.getMessage());
+        }
+
         DatosDemo.cargar();
         inicializado = true;
     }
