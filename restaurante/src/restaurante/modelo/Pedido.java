@@ -4,30 +4,79 @@
  */
 package restaurante.modelo;
 
-/**
- *
- * @author Loreley
- */
 import java.util.ArrayList;
 import java.util.List;
 import patrones.prototype.PedidoPrototype;
 
 public class Pedido implements PedidoPrototype {
 
+    // PK en BD
+    private int idPedido;
+
+    // Relaciones FK
+    private int idCliente;
+    private int idEmpleado;
+    private int idMesa;   // 0 si no aplica
+    private String tipoPedido;  // "Mesa" | "Para llevar" | "Delivery"
+
+    // Campos de negocio / visualización
     private String codigo;
-    private String cliente;
-    private String sucursal;
-    private String canal;
+    private String cliente;      // nombre visible
+    private String sucursal;     // cosmético: "Mesa 3", "Para llevar", etc.
+    private String canal;        // cosmético: derivado de tipoPedido
     private String estado;
     private final List<DetallePedido> detalles;
 
     public Pedido(String codigo) {
+        this.idPedido = 0;
         this.codigo = codigo;
         this.cliente = "";
         this.sucursal = "";
         this.canal = "";
-        this.estado = "En preparación";
+        this.tipoPedido = "Mesa";
+        this.estado = "Pendiente";
         this.detalles = new ArrayList<>();
+    }
+
+    // Getters / Setters
+    public int getIdPedido() {
+        return idPedido;
+    }
+
+    public void setIdPedido(int idPedido) {
+        this.idPedido = idPedido;
+    }
+
+    public int getIdCliente() {
+        return idCliente;
+    }
+
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public int getIdEmpleado() {
+        return idEmpleado;
+    }
+
+    public void setIdEmpleado(int idEmpleado) {
+        this.idEmpleado = idEmpleado;
+    }
+
+    public int getIdMesa() {
+        return idMesa;
+    }
+
+    public void setIdMesa(int idMesa) {
+        this.idMesa = idMesa;
+    }
+
+    public String getTipoPedido() {
+        return tipoPedido;
+    }
+
+    public void setTipoPedido(String tipoPedido) {
+        this.tipoPedido = tipoPedido;
     }
 
     public String getCodigo() {
@@ -74,13 +123,22 @@ public class Pedido implements PedidoPrototype {
         this.estado = estado;
     }
 
+    // Detalles — dos sobrecargas
     public void agregarDetalle(String producto, int cantidad, double precio) {
+        agregarDetalle(0, producto, cantidad, precio);
+    }
+
+    public void agregarDetalle(int idProducto, String producto, int cantidad, double precio) {
         if (cantidad <= 0 || precio < 0) {
             throw new IllegalArgumentException(
                     "La cantidad debe ser positiva y el precio no puede ser negativo.");
         }
+        detalles.add(new DetallePedido(idProducto, producto, cantidad, precio));
+    }
 
-        detalles.add(new DetallePedido(producto, cantidad, precio));
+    // Para uso del DAO al reconstruir desde BD
+    public void agregarDetallePersistido(DetallePedido d) {
+        detalles.add(d);
     }
 
     public boolean tieneDetalles() {
@@ -89,11 +147,9 @@ public class Pedido implements PedidoPrototype {
 
     public double calcularTotal() {
         double total = 0;
-
-        for (DetallePedido detalle : detalles) {
-            total += detalle.calcularSubtotal();
+        for (DetallePedido d : detalles) {
+            total += d.calcularSubtotal();
         }
-
         return total;
     }
 
@@ -103,29 +159,31 @@ public class Pedido implements PedidoPrototype {
         }
         String e = estado.trim().toLowerCase();
         return e.equals("confirmado")
+                || e.equals("en preparacion")
+                || e.equals("en preparación")
                 || e.equals("listo")
-                || e.equals("atendido")
-                || e.equals("en preparación");
+                || e.equals("entregado");
     }
 
     @Override
     public Pedido clonar() {
         Pedido copia = new Pedido(this.codigo + "-COPIA");
-
+        copia.setIdCliente(this.idCliente);
+        copia.setIdEmpleado(this.idEmpleado);
+        copia.setIdMesa(this.idMesa);
+        copia.setTipoPedido(this.tipoPedido);
         copia.setCliente(this.cliente);
         copia.setSucursal(this.sucursal);
         copia.setCanal(this.canal);
-        copia.setEstado("En preparación");
-
-        for (DetallePedido detalle : this.detalles) {
-            copia.detalles.add(detalle.clone());
+        copia.setEstado("Pendiente");
+        for (DetallePedido d : this.detalles) {
+            copia.detalles.add(d.clone());
         }
-
         return copia;
     }
-    
+
     @Override
     public String toString() {
         return codigo + " - " + cliente;
-}
+    }
 }

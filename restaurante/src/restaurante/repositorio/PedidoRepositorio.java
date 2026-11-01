@@ -14,4 +14,6 @@ public interface PedidoRepositorio {
     Pedido buscarPorCodigo(String codigo);
 
     List<Pedido> listar();
+
+    boolean eliminar(String codigo);
 }

@@ -6,12 +6,15 @@ package restaurante.dao;
 
 import restaurante.dao.mysql.CategoriaDAOMySQL;
 import restaurante.dao.mysql.ClienteDAOMySQL;
+import restaurante.dao.mysql.EmpleadoDAOMySQL;
+import restaurante.dao.mysql.MesaDAOMySQL;
 import restaurante.dao.mysql.ProductoDAOMySQL;
 import restaurante.implementacion.CategoriaRepositorioMemoria;
 import restaurante.implementacion.ClienteRepositorioMemoria;
 import restaurante.implementacion.ProductoRepositorioMemoria;
 import restaurante.repositorio.CategoriaRepositorio;
 import restaurante.repositorio.ClienteRepositorio;
+import restaurante.repositorio.PedidoRepositorio;
 import restaurante.repositorio.ProductoRepositorio;
 
 /**
@@ -45,5 +48,19 @@ public class DAOFactory {
 
     public ProductoRepositorio crearProductoRepositorio() {
         return usarMySQL ? new ProductoDAOMySQL() : new ProductoRepositorioMemoria();
+    }
+
+    public PedidoRepositorio crearPedidoRepositorio() {
+        return usarMySQL
+                ? new restaurante.dao.mysql.PedidoDAOMySQL()
+                : new restaurante.implementacion.PedidoRepositorioMemoria();
+    }
+
+    public EmpleadoDAOMySQL crearEmpleadoDAO() {
+        return new EmpleadoDAOMySQL();
+    }
+
+    public MesaDAOMySQL crearMesaDAO() {
+        return new MesaDAOMySQL();
     }
 }

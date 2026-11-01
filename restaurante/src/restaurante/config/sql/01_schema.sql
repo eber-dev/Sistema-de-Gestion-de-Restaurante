@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS reservas (
 
 CREATE TABLE IF NOT EXISTS pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(20) UNIQUE,
     id_cliente INT,
     id_empleado INT NOT NULL,
     id_mesa INT,

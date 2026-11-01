@@ -34,7 +34,7 @@ public class Aplicacion {
             = new ProductoServicio(DAO.crearProductoRepositorio());
 
     private static final PedidoRepositorio pedidoRepositorio
-            = patrones.singleton.PedidoRepositorio.getInstancia();
+            = DAO.crearPedidoRepositorio();
     private static final PedidoServicio pedidoServicio
             = new PedidoServicio(pedidoRepositorio);
 
@@ -88,5 +88,17 @@ public class Aplicacion {
 
     public static VentaFacade ventaFacade() {
         return ventaFacade;
+    }
+
+    public static restaurante.dao.mysql.EmpleadoDAOMySQL empleados() {
+        return DAO.crearEmpleadoDAO();
+    }
+
+    public static restaurante.dao.mysql.MesaDAOMySQL mesas() {
+        return DAO.crearMesaDAO();
+    }
+
+    public static restaurante.repositorio.PedidoRepositorio pedidoDAO() {
+        return pedidoRepositorio;
     }
 }

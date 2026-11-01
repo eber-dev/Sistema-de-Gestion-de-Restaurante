@@ -4,20 +4,44 @@
  */
 package restaurante.modelo;
 
-/**
- *
- * @author Loreley
- */
 public class DetallePedido implements Cloneable {
 
-    private String producto;
+    private int idDetalle;         // id_detalle en BD (0 si aún no persiste)
+    private int idProducto;        // id_producto en BD
+    private String producto;       // nombre visible
     private int cantidad;
     private double precio;
 
     public DetallePedido(String producto, int cantidad, double precio) {
+        this(0, 0, producto, cantidad, precio);
+    }
+
+    public DetallePedido(int idProducto, String producto, int cantidad, double precio) {
+        this(0, idProducto, producto, cantidad, precio);
+    }
+
+    public DetallePedido(int idDetalle, int idProducto, String producto, int cantidad, double precio) {
+        this.idDetalle = idDetalle;
+        this.idProducto = idProducto;
         this.producto = producto;
         this.cantidad = cantidad;
         this.precio = precio;
+    }
+
+    public int getIdDetalle() {
+        return idDetalle;
+    }
+
+    public void setIdDetalle(int idDetalle) {
+        this.idDetalle = idDetalle;
+    }
+
+    public int getIdProducto() {
+        return idProducto;
+    }
+
+    public void setIdProducto(int idProducto) {
+        this.idProducto = idProducto;
     }
 
     public String getProducto() {
@@ -38,6 +62,6 @@ public class DetallePedido implements Cloneable {
 
     @Override
     public DetallePedido clone() {
-        return new DetallePedido(producto, cantidad, precio);
+        return new DetallePedido(idDetalle, idProducto, producto, cantidad, precio);
     }
 }

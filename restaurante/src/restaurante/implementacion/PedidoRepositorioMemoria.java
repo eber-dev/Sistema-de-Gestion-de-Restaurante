@@ -32,4 +32,9 @@ public class PedidoRepositorioMemoria implements PedidoRepositorio {
     public List<Pedido> listar() {
         return new ArrayList<>(pedidos);
     }
+
+    @Override
+    public boolean eliminar(String codigo) {
+        return pedidos.removeIf(p -> p.getCodigo().equals(codigo));
+    }
 }

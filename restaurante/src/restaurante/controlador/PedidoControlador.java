@@ -4,94 +4,70 @@
  */
 package restaurante.controlador;
 
-/**
- *
- * @author Loreley
- */
 import java.util.List;
 import restaurante.modelo.Pedido;
 import patrones.abstractfactory.AbstractFactoryPedido;
 import patrones.Builder.AbstractPedidoBuilder;
-import patrones.factory.PedidoFactory;
-import patrones.singleton.PedidoRepositorio;
+import restaurante.app.Aplicacion;
 
 public class PedidoControlador {
 
-    private final PedidoRepositorio repositorio;
-
-    public PedidoControlador() {
-        repositorio = PedidoRepositorio.getInstancia();
-    }
-
     public Pedido crearPedido(
             AbstractFactoryPedido fabrica,
-            String cliente,
-            String sucursal,
-            String canal) {
+            int idCliente,
+            String nombreCliente,
+            int idEmpleado,
+            int idMesa,
+            String tipoPedido) {
 
         AbstractPedidoBuilder builder = fabrica.crearBuilder();
 
-        return builder
-                .establecerCliente(cliente)
-                .establecerSucursal(sucursal)
-                .establecerCanal(canal)
+        Pedido p = builder
+                .establecerCliente(nombreCliente)
+                .establecerSucursal(tipoPedido)
+                .establecerCanal("Delivery".equalsIgnoreCase(tipoPedido) ? "Virtual" : "Presencial")
                 .construir();
-    }
 
-    public Pedido crearPedidoConFactory(
-            String cliente, String sucursal, String canal) {
-
-        PedidoFactory factory
-                = new patrones.factory.PedidoFactoryConcreto();
-
-        Pedido pedido = factory.crearPedido();
-        pedido.setCliente(cliente);
-        pedido.setSucursal(sucursal);
-        pedido.setCanal(canal);
-
-        return pedido;
+        p.setIdCliente(idCliente);
+        p.setIdEmpleado(idEmpleado);
+        p.setIdMesa(idMesa);
+        p.setTipoPedido(tipoPedido);
+        p.setEstado("Pendiente");
+        return p;
     }
 
     public void confirmarPedido(Pedido pedido) {
         if (pedido == null) {
             throw new IllegalArgumentException("No existe un pedido.");
         }
-
-        if (pedido.getCliente() == null
-                || pedido.getCliente().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Debe seleccionar un cliente.");
+        if (pedido.getCliente() == null || pedido.getCliente().trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe seleccionar un cliente.");
         }
-
-        if (pedido.getSucursal() == null
-                || pedido.getSucursal().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Debe seleccionar una sucursal.");
+        if (pedido.getIdEmpleado() <= 0) {
+            throw new IllegalArgumentException("Debe seleccionar un empleado.");
         }
-
         if (!pedido.tieneDetalles()) {
-            throw new IllegalArgumentException(
-                    "Debe agregar al menos un producto.");
+            throw new IllegalArgumentException("Debe agregar al menos un producto.");
         }
 
-        pedido.setEstado("Confirmado");
-        repositorio.guardar(pedido);
+        // En BD usamos "En preparacion" en lugar de "Confirmado"
+        pedido.setEstado("En preparacion");
+        Aplicacion.pedido().guardar(pedido);
     }
 
     public Pedido clonarPedido(Pedido original) {
         if (original == null) {
-            throw new IllegalArgumentException(
-                    "No existe un pedido para clonar.");
+            throw new IllegalArgumentException("No existe un pedido para clonar.");
         }
-
         return original.clonar();
     }
 
     public List<Pedido> listarPedidos() {
-        return repositorio.listar();
+        return Aplicacion.pedido().listar();
     }
 
     public boolean eliminarPedido(String codigo) {
-        return repositorio.eliminar(codigo);
+        return Aplicacion.pedido().buscarPorCodigo(codigo) != null
+                && ((restaurante.dao.mysql.PedidoDAOMySQL) Aplicacion.pedidoDAO()).eliminar(codigo);
     }
 }
