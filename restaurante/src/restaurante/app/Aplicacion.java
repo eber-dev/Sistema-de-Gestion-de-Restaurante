@@ -21,14 +21,17 @@ import restaurante.servicio.VentaServicio;
 
 public class Aplicacion {
 
+    private static final restaurante.dao.DAOFactory DAO
+            = restaurante.dao.DAOFactory.getInstancia();
+
     private static final CategoriaServicio categoriaServicio
-            = new CategoriaServicio(new CategoriaRepositorioMemoria());
+            = new CategoriaServicio(DAO.crearCategoriaRepositorio());
 
     private static final ClienteServicio clienteServicio
-            = new ClienteServicio(new ClienteRepositorioMemoria());
+            = new ClienteServicio(DAO.crearClienteRepositorio());
 
     private static final ProductoServicio productoServicio
-            = new ProductoServicio(new ProductoRepositorioMemoria());
+            = new ProductoServicio(DAO.crearProductoRepositorio());
 
     private static final PedidoRepositorio pedidoRepositorio
             = patrones.singleton.PedidoRepositorio.getInstancia();
@@ -60,7 +63,6 @@ public class Aplicacion {
             System.err.println("[App] No se pudo inicializar la base de datos: " + ex.getMessage());
         }
 
-        DatosDemo.cargar();
         inicializado = true;
     }
 
