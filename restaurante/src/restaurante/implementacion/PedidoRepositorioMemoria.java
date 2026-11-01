@@ -37,4 +37,14 @@ public class PedidoRepositorioMemoria implements PedidoRepositorio {
     public boolean eliminar(String codigo) {
         return pedidos.removeIf(p -> p.getCodigo().equals(codigo));
     }
+
+    @Override
+    public void actualizarEstado(int idPedido, String nuevoEstado) {
+        for (Pedido p : pedidos) {
+            if (p.getIdPedido() == idPedido) {
+                p.setEstado(nuevoEstado);
+                return;
+            }
+        }
+    }
 }

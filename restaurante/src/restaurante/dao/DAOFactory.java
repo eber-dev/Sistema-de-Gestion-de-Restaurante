@@ -16,6 +16,7 @@ import restaurante.repositorio.CategoriaRepositorio;
 import restaurante.repositorio.ClienteRepositorio;
 import restaurante.repositorio.PedidoRepositorio;
 import restaurante.repositorio.ProductoRepositorio;
+import restaurante.repositorio.VentaRepositorio;
 
 /**
  * Abstract Factory + Singleton. Decide si devuelve DAOs MySQL o repositorios en
@@ -62,5 +63,11 @@ public class DAOFactory {
 
     public MesaDAOMySQL crearMesaDAO() {
         return new MesaDAOMySQL();
+    }
+
+    public VentaRepositorio crearVentaRepositorio() {
+        return usarMySQL
+                ? new restaurante.dao.mysql.VentaDAOMySQL()
+                : new restaurante.implementacion.VentaRepositorioMemoria();
     }
 }

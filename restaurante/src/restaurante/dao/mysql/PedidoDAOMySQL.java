@@ -220,4 +220,15 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
         }
         return "-";
     }
+
+    public void actualizarEstado(int idPedido, String nuevoEstado) {
+        String sql = "UPDATE pedidos SET estado=? WHERE id_pedido=?";
+        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idPedido);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalArgumentException("Error al actualizar estado: " + ex.getMessage(), ex);
+        }
+    }
 }

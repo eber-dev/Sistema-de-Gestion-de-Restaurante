@@ -16,4 +16,7 @@ public interface PedidoRepositorio {
     List<Pedido> listar();
 
     boolean eliminar(String codigo);
+
+    void actualizarEstado(int idPedido, String nuevoEstado);
+
 }

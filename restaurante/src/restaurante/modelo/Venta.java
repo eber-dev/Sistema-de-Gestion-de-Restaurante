@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 public class Venta {
 
-    private final int idVenta;
+    private int idVenta;
     private final Pedido pedido;
     private final MetodoPago metodoPago;
     private final double opvGravado;
@@ -59,6 +59,10 @@ public class Venta {
 
     public LocalDateTime getFecha() {
         return fecha;
+    }
+
+    public void setIdVenta(int idVenta) {
+        this.idVenta = idVenta;
     }
 
     @Override

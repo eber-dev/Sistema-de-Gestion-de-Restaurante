@@ -38,12 +38,12 @@ public class Aplicacion {
     private static final PedidoServicio pedidoServicio
             = new PedidoServicio(pedidoRepositorio);
 
-    private static final VentaRepositorio ventaRepositorio
-            = new VentaRepositorioMemoria();
+    private static final VentaRepositorio ventaRepositorio = DAO.crearVentaRepositorio();
+
     private static final BoletaServicio boletaServicio
             = new BoletaServicio();
-    private static final VentaServicio ventaServicio
-            = new VentaServicio(ventaRepositorio);
+    private static final VentaServicio ventaServicio = new VentaServicio(ventaRepositorio);
+
     private static final VentaFacade ventaFacade
             = new VentaFacade(ventaServicio, boletaServicio);
 

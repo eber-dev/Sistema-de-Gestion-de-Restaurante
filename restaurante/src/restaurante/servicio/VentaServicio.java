@@ -24,11 +24,13 @@ public class VentaServicio {
         if (venta == null) {
             throw new IllegalArgumentException("La venta no puede ser nula.");
         }
-        if (repositorio.buscarPorId(venta.getIdVenta()) != null) {
-            throw new IllegalArgumentException(
-                    "Ya existe una venta con ID " + venta.getIdVenta());
-        }
+
+        // 1. Guardamos el pago en la BD (o memoria)
         repositorio.guardar(venta);
+
+        // 2. Actualizamos el estado del pedido
+        restaurante.app.Aplicacion.pedidoDAO().actualizarEstado(
+                venta.getPedido().getIdPedido(), "Entregado");
     }
 
     public Venta buscarPorID(int id) {
