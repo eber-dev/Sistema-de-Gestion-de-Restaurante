@@ -111,11 +111,10 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
     }
 
     public boolean eliminar(String codigo) {
-        String sql = "DELETE FROM pedidos WHERE codigo=?";
         try (Connection cn = ConexionDB.getInstancia().conectar()) {
-            cn.setAutoCommit(false);
+            cn.setAutoCommit(false); // Iniciamos transacción
 
-            // primero los detalles (por integridad, aunque podríamos usar ON DELETE CASCADE)
+            // 1. Buscar el id del pedido
             int idPedido = -1;
             try (PreparedStatement ps = cn.prepareStatement("SELECT id_pedido FROM pedidos WHERE codigo=?")) {
                 ps.setString(1, codigo);
@@ -125,18 +124,32 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
                     }
                 }
             }
+
             if (idPedido == -1) {
+                cn.rollback();
                 return false;
+            }
+
+            try (PreparedStatement ps = cn.prepareStatement("DELETE FROM pagos WHERE id_pedido=?")) {
+                ps.setInt(1, idPedido);
+                ps.executeUpdate();
+            }
+
+            try (PreparedStatement ps = cn.prepareStatement("DELETE FROM pedido_eventos WHERE id_pedido=?")) {
+                ps.setInt(1, idPedido);
+                ps.executeUpdate();
             }
 
             try (PreparedStatement ps = cn.prepareStatement("DELETE FROM detalle_pedido WHERE id_pedido=?")) {
                 ps.setInt(1, idPedido);
                 ps.executeUpdate();
             }
-            try (PreparedStatement ps = cn.prepareStatement(sql)) {
-                ps.setString(1, codigo);
+
+            try (PreparedStatement ps = cn.prepareStatement("DELETE FROM pedidos WHERE id_pedido=?")) {
+                ps.setInt(1, idPedido);
                 ps.executeUpdate();
             }
+
             cn.commit();
             return true;
 
@@ -145,9 +158,6 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
         }
     }
 
-    /**
-     * Reconstruye un Pedido (incluye detalles, nombre cliente, mesa, canal).
-     */
     private Pedido reconstruir(Connection cn, ResultSet rs) throws SQLException {
         Pedido p = new Pedido(rs.getString("codigo"));
         p.setIdPedido(rs.getInt("id_pedido"));
@@ -157,12 +167,10 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
         p.setTipoPedido(rs.getString("tipo_pedido"));
         p.setEstado(rs.getString("estado"));
 
-        // Campos cosméticos
         p.setCliente(obtenerNombreCliente(cn, p.getIdCliente()));
         p.setSucursal(obtenerSucursal(cn, p.getIdMesa(), p.getTipoPedido()));
         p.setCanal("Delivery".equalsIgnoreCase(p.getTipoPedido()) ? "Virtual" : "Presencial");
 
-        // Detalles
         String sqlDet = "SELECT d.id_detalle, d.id_producto, d.cantidad, d.precio_unitario, pr.nombre "
                 + "FROM detalle_pedido d "
                 + "INNER JOIN productos pr ON d.id_producto = pr.id_producto "

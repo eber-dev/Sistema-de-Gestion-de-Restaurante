@@ -24,7 +24,7 @@ public class Pedido implements PedidoPrototype {
     private String cliente;      // nombre visible
     private String sucursal;     // cosmético: "Mesa 3", "Para llevar", etc.
     private String canal;        // cosmético: derivado de tipoPedido
-    private String estado;
+    private patrones.state.EstadoPedido estadoObj;
     private final List<DetallePedido> detalles;
 
     public Pedido(String codigo) {
@@ -34,7 +34,7 @@ public class Pedido implements PedidoPrototype {
         this.sucursal = "";
         this.canal = "";
         this.tipoPedido = "Mesa";
-        this.estado = "Pendiente";
+        this.estadoObj = new patrones.state.EstadoPendiente();
         this.detalles = new ArrayList<>();
     }
 
@@ -96,7 +96,26 @@ public class Pedido implements PedidoPrototype {
     }
 
     public String getEstado() {
-        return estado;
+        return estadoObj.getNombre();
+    }
+
+    public void setEstado(String estado) {
+        switch (estado) {
+            case "Pendiente":
+                this.estadoObj = new patrones.state.EstadoPendiente();
+                break;
+            case "En preparacion":
+                this.estadoObj = new patrones.state.EstadoEnPreparacion();
+                break;
+            case "Entregado":
+                this.estadoObj = new patrones.state.EstadoEntregado();
+                break;
+            case "Cancelado":
+                this.estadoObj = new patrones.state.EstadoCancelado();
+                break;
+            default:
+                this.estadoObj = new patrones.state.EstadoPendiente();
+        }
     }
 
     public List<DetallePedido> getDetalles() {
@@ -117,10 +136,6 @@ public class Pedido implements PedidoPrototype {
 
     public void setCanal(String canal) {
         this.canal = canal;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
     }
 
     // Detalles — dos sobrecargas
@@ -154,15 +169,15 @@ public class Pedido implements PedidoPrototype {
     }
 
     public boolean estaConfirmado() {
-        if (estado == null) {
+        if (estadoObj == null) {
             return false;
         }
-        String e = estado.trim().toLowerCase();
-        return e.equals("confirmado")
-                || e.equals("en preparacion")
+        String e = estadoObj.getNombre().trim().toLowerCase();
+        return e.equals("en preparacion")
                 || e.equals("en preparación")
+                || e.equals("entregado")
                 || e.equals("listo")
-                || e.equals("entregado");
+                || e.equals("confirmado");
     }
 
     @Override
@@ -185,5 +200,21 @@ public class Pedido implements PedidoPrototype {
     @Override
     public String toString() {
         return codigo + " - " + cliente;
+    }
+
+    public void setEstadoObj(patrones.state.EstadoPedido estado) {
+        this.estadoObj = estado;
+    }
+
+    public void confirmar() {
+        estadoObj.confirmar(this);
+    }
+
+    public void entregar() {
+        estadoObj.entregar(this);
+    }
+
+    public void cancelar() {
+        estadoObj.cancelar(this);
     }
 }

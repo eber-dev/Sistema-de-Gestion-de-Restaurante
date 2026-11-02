@@ -29,8 +29,11 @@ public class VentaServicio {
         repositorio.guardar(venta);
 
         // 2. Actualizamos el estado del pedido
+        venta.getPedido().entregar();
         restaurante.app.Aplicacion.pedidoDAO().actualizarEstado(
-                venta.getPedido().getIdPedido(), "Entregado");
+                venta.getPedido().getIdPedido(),
+                venta.getPedido().getEstado() // Devuelve "Entregado"
+        );
     }
 
     public Venta buscarPorID(int id) {
@@ -49,12 +52,22 @@ public class VentaServicio {
             throw new IllegalArgumentException("El pedido no está confirmado.");
         }
 
-        double opv = calcularOPV(pedido);
-        double descuento = opv * metodo.getDescuento();
-        double igv = (opv - descuento) * IGV;
-        double total = (opv - descuento) + igv;
+        // 1. Envolvemos el pedido en el componente base
+        patrones.decorator.Calculable calculo = new patrones.decorator.PedidoBase(pedido);
 
-        return new Venta(siguienteId(), pedido, metodo, opv, descuento, igv, total);
+        // 2. Lo decoramos con el descuento según el método de pago
+        calculo = new patrones.decorator.DescuentoDecorator(calculo, metodo.getDescuento());
+
+        // 3. Calculamos los totales
+        double opv = pedido.calcularTotal();
+        double totalConDescuento = calculo.calcularTotal();
+        double descuentoAplicado = opv - totalConDescuento;
+
+        // El IGV (18%) se suma sobre el total ya descontado
+        double igv = totalConDescuento * IGV;
+        double totalFinal = totalConDescuento + igv;
+
+        return new Venta(0, pedido, metodo, opv, descuentoAplicado, igv, totalFinal);
     }
 
     private double calcularOPV(Pedido pedido) {

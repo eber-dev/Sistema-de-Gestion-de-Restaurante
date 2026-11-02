@@ -51,8 +51,12 @@ public class PedidoControlador {
         }
 
         // En BD usamos "En preparacion" en lugar de "Confirmado"
-        pedido.setEstado("En preparacion");
+        // Cambia el pedido.setEstado("En preparacion");
+        pedido.confirmar();
         Aplicacion.pedido().guardar(pedido);
+
+        patrones.command.Comando cmd = new patrones.command.ConfirmarPedidoComando(pedido, Aplicacion.pedidoDAO());
+        cmd.ejecutar();
     }
 
     public Pedido clonarPedido(Pedido original) {
