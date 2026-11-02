@@ -37,7 +37,6 @@ import restaurante.modelo.Producto;
 
 public class FrmPedidos extends JFrame {
 
-    // ====== Paleta ======
     private static final Color OSCURO = new Color(31, 45, 55);
     private static final Color FONDO = new Color(245, 247, 250);
     private static final Color VERDE = new Color(0, 153, 0);
@@ -46,7 +45,6 @@ public class FrmPedidos extends JFrame {
     private static final Color ROJO = new Color(204, 0, 51);
     private static final Color GRIS = new Color(180, 180, 180);
 
-    // ====== Componentes ======
     private JComboBox<Cliente> cbxCliente;
     private JComboBox<Empleado> cbxEmpleado;
     private JComboBox<Mesa> cbxMesa;
@@ -71,11 +69,9 @@ public class FrmPedidos extends JFrame {
     private JButton btnEliminar;
     private JButton btnIrVentas;
 
-    // ====== Estado ======
     private final PedidoControlador controlador = new PedidoControlador();
     private Pedido pedidoActual;
 
-    // ====== Constructor ======
     public FrmPedidos() {
         setTitle("Pedidos");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -99,7 +95,6 @@ public class FrmPedidos extends JFrame {
         actualizarTablaPedidos();
     }
 
-    // ====== UI: Header ======
     private JPanel crearHeader() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(OSCURO);
@@ -123,7 +118,6 @@ public class FrmPedidos extends JFrame {
         return p;
     }
 
-    // ====== UI: Centro (datos + detalle) ======
     private JPanel crearCentro() {
         JPanel centro = new JPanel(new GridLayout(1, 2, 14, 14));
         centro.setBackground(FONDO);
@@ -186,7 +180,6 @@ public class FrmPedidos extends JFrame {
         JLabel titulo = new JLabel("DETALLE DEL PEDIDO");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        // --- Formulario (Producto, Cantidad, Precio) ---
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
 
@@ -211,7 +204,6 @@ public class FrmPedidos extends JFrame {
         superior.add(form, BorderLayout.CENTER);
         superior.add(botonera, BorderLayout.SOUTH);
 
-        // --- Tabla de detalles ---
         tblDetalles = new JTable(new DefaultTableModel(
                 new Object[][]{},
                 new String[]{"Producto", "Cantidad", "Precio", "Subtotal"}) {
@@ -236,13 +228,11 @@ public class FrmPedidos extends JFrame {
         return p;
     }
 
-    // ====== UI: Sur (acciones + tabla pedidos) ======
     private JPanel crearSur() {
         JPanel sur = new JPanel(new BorderLayout(0, 10));
         sur.setBackground(FONDO);
         sur.setBorder(BorderFactory.createEmptyBorder(0, 14, 14, 14));
 
-        // Acciones
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
         acciones.setBackground(Color.WHITE);
         acciones.setBorder(BorderFactory.createCompoundBorder(
@@ -268,7 +258,6 @@ public class FrmPedidos extends JFrame {
         acciones.add(btnEliminar);
         acciones.add(btnIrVentas);
 
-        // Tabla pedidos
         JPanel pedidos = new JPanel(new BorderLayout(0, 6));
         pedidos.setBackground(Color.WHITE);
         pedidos.setBorder(BorderFactory.createCompoundBorder(
@@ -300,7 +289,6 @@ public class FrmPedidos extends JFrame {
         return sur;
     }
 
-    // ====== Helper de layout ======
     private void agregarFila(JPanel panel, int fila, String etiqueta, java.awt.Component campo) {
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -331,7 +319,6 @@ public class FrmPedidos extends JFrame {
         return b;
     }
 
-    // ====== Carga de combos ======
     private void cargarCombos() {
         cbxCliente.removeAllItems();
         for (Cliente c : Aplicacion.cliente().listar()) {
@@ -371,7 +358,6 @@ public class FrmPedidos extends JFrame {
         }
     }
 
-    // ====== Eventos ======
     private void onCrearPedido() {
         Cliente cli = (Cliente) cbxCliente.getSelectedItem();
         Empleado emp = (Empleado) cbxEmpleado.getSelectedItem();
@@ -446,9 +432,12 @@ public class FrmPedidos extends JFrame {
             actualizarTablaPedidos();
             JOptionPane.showMessageDialog(this, "Pedido confirmado y guardado en MySQL.");
             limpiarFormularioPedido();
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Validación", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error inesperado: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -492,9 +481,14 @@ public class FrmPedidos extends JFrame {
         }
 
         String codigo = (String) tblPedidos.getValueAt(fila, 0);
-        if (controlador.eliminarPedido(codigo)) {
-            actualizarTablaPedidos();
-            JOptionPane.showMessageDialog(this, "Pedido eliminado.");
+        try {
+            if (controlador.eliminarPedido(codigo)) {
+                actualizarTablaPedidos();
+                JOptionPane.showMessageDialog(this, "Pedido eliminado correctamente.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo eliminar: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -38,8 +38,19 @@ public class PedidoControlador {
 
     public void confirmarPedido(Pedido pedido) {
         if (pedido == null) {
-            throw new IllegalArgumentException("No existe un pedido.");
+            throw new IllegalArgumentException("No existe un pedido para confirmar.");
         }
+
+        // Si ya tiene ID, es porque ya fue guardado en la BD
+        if (pedido.getIdPedido() > 0) {
+            throw new IllegalArgumentException("Este pedido ya fue confirmado y guardado en la base de datos.");
+        }
+
+        // Verificamos el estado usando el patrón State
+        if (!pedido.getEstado().equalsIgnoreCase("Pendiente")) {
+            throw new IllegalArgumentException("Solo se pueden confirmar pedidos en estado 'Pendiente'.");
+        }
+
         if (pedido.getCliente() == null || pedido.getCliente().trim().isEmpty()) {
             throw new IllegalArgumentException("Debe seleccionar un cliente.");
         }
@@ -50,11 +61,7 @@ public class PedidoControlador {
             throw new IllegalArgumentException("Debe agregar al menos un producto.");
         }
 
-        // En BD usamos "En preparacion" en lugar de "Confirmado"
-        // Cambia el pedido.setEstado("En preparacion");
-        pedido.confirmar();
-        Aplicacion.pedido().guardar(pedido);
-
+        // Ejecutamos el patrón Command
         patrones.command.Comando cmd = new patrones.command.ConfirmarPedidoComando(pedido, Aplicacion.pedidoDAO());
         cmd.ejecutar();
     }
