@@ -58,9 +58,11 @@ public class Aplicacion {
         }
 
         try {
-            restaurante.config.DatabaseInitializer.inicializar();
+            if (restaurante.config.ConexionDB.getInstancia().isAutoInit()) {
+                restaurante.config.DatabaseInitializer.inicializar();
+            }
         } catch (Exception ex) {
-            System.err.println("[App] No se pudo inicializar la base de datos: " + ex.getMessage());
+            throw new IllegalStateException("No se pudo inicializar la base de datos. Revise la conexión y los permisos.", ex);
         }
 
         inicializado = true;

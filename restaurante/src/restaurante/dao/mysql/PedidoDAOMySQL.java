@@ -30,6 +30,21 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
 
         try (Connection cn = ConexionDB.getInstancia().conectar()) {
             cn.setAutoCommit(false);
+            try {
+            if(p == null || p.getIdEmpleado() <= 0 || p.getDetalles().isEmpty()) throw new SQLException("Pedido, empleado y detalles son obligatorios");
+            // Se comprueban empleados y clientes antes de crear el encabezado.
+            try (PreparedStatement ps=cn.prepareStatement("SELECT e.id_empleado,c.id_cliente FROM empleados e LEFT JOIN clientes c ON c.id_cliente=? WHERE e.id_empleado=? FOR UPDATE")) {
+                if(p.getIdCliente()>0) ps.setInt(1,p.getIdCliente()); else ps.setNull(1,java.sql.Types.INTEGER);
+                ps.setInt(2,p.getIdEmpleado()); try(ResultSet r=ps.executeQuery()) {
+                    if(!r.next() || (p.getIdCliente()>0 && r.getObject(2)==null)) throw new SQLException("Cliente o empleado inexistente");
+                }
+            }
+            if(p.getIdMesa()>0) try(PreparedStatement ps=cn.prepareStatement("SELECT id_mesa FROM mesas WHERE id_mesa=? FOR UPDATE")) {
+                ps.setInt(1,p.getIdMesa());try(ResultSet r=ps.executeQuery()){if(!r.next())throw new SQLException("Mesa inexistente");}
+            }
+            try(PreparedStatement ps=cn.prepareStatement("SELECT id_producto FROM productos WHERE id_producto=? FOR UPDATE")) {
+                for(DetallePedido d:p.getDetalles()) { if(d.getIdProducto()<=0 || d.getCantidad()<=0)throw new SQLException("Detalle inválido"); ps.setInt(1,d.getIdProducto()); try(ResultSet r=ps.executeQuery()){if(!r.next())throw new SQLException("Producto inexistente");} }
+            }
 
             int idPedidoGenerado;
             try (PreparedStatement ps = cn.prepareStatement(sqlPedido, Statement.RETURN_GENERATED_KEYS)) {
@@ -72,6 +87,10 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
 
             cn.commit();
             p.setIdPedido(idPedidoGenerado);
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException rollback) { ex.addSuppressed(rollback); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al guardar pedido: " + ex.getMessage(), ex);
@@ -113,10 +132,11 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
     public boolean eliminar(String codigo) {
         try (Connection cn = ConexionDB.getInstancia().conectar()) {
             cn.setAutoCommit(false); // Iniciamos transacción
+            try {
 
             // 1. Buscar el id del pedido
             int idPedido = -1;
-            try (PreparedStatement ps = cn.prepareStatement("SELECT id_pedido FROM pedidos WHERE codigo=?")) {
+            try (PreparedStatement ps = cn.prepareStatement("SELECT id_pedido FROM pedidos WHERE codigo=? FOR UPDATE")) {
                 ps.setString(1, codigo);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -128,6 +148,11 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
             if (idPedido == -1) {
                 cn.rollback();
                 return false;
+            }
+
+            // Bloquea productos relacionados antes de retirar sus detalles.
+            try (PreparedStatement ps = cn.prepareStatement("SELECT p.id_producto FROM detalle_pedido d JOIN productos p ON p.id_producto=d.id_producto WHERE d.id_pedido=? FOR UPDATE")) {
+                ps.setInt(1,idPedido); try(ResultSet r=ps.executeQuery()){while(r.next()) { /* Mantener bloqueos hasta commit. */ }}
             }
 
             try (PreparedStatement ps = cn.prepareStatement("DELETE FROM pagos WHERE id_pedido=?")) {
@@ -152,6 +177,10 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
 
             cn.commit();
             return true;
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException rollback) { ex.addSuppressed(rollback); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al eliminar pedido: " + ex.getMessage(), ex);

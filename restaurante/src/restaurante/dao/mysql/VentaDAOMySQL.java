@@ -22,22 +22,53 @@ public class VentaDAOMySQL implements VentaRepositorio {
 
     @Override
     public void guardar(Venta v) {
-        String sql = "INSERT INTO pagos (id_pedido, metodo_pago, monto, estado) "
-                + "VALUES (?, ?, ?, 'Pagado')";
-
-        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setInt(1, v.getPedido().getIdPedido());
-            ps.setString(2, mapearMetodoPago(v.getMetodoPago()));
-            ps.setDouble(3, v.getTotal());
-            ps.executeUpdate();
-
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    v.setIdVenta(rs.getInt(1));
+        if (v == null || v.getPedido() == null || v.getPedido().getIdPedido() <= 0)
+            throw new IllegalArgumentException("Pedido no válido");
+        int id = v.getPedido().getIdPedido();
+        try (Connection cn = ConexionDB.getInstancia().conectar()) {
+            cn.setAutoCommit(false);
+            try {
+                String estado; int mesa;
+                try (PreparedStatement ps = cn.prepareStatement("SELECT estado,id_mesa FROM pedidos WHERE id_pedido=? FOR UPDATE")) {
+                    ps.setInt(1,id);
+                    try (ResultSet r=ps.executeQuery()) {
+                        if (!r.next()) throw new SQLException("Pedido inexistente");
+                        estado=r.getString(1); mesa=r.getInt(2);
+                    }
                 }
+                if (!"En preparacion".equalsIgnoreCase(estado) && !"Listo".equalsIgnoreCase(estado))
+                    throw new SQLException("El pedido no está disponible para cobrar");
+                try (PreparedStatement ps=cn.prepareStatement("SELECT id_pago FROM pagos WHERE id_pedido=? AND estado='Pagado' FOR UPDATE")) {
+                    ps.setInt(1,id); try(ResultSet r=ps.executeQuery()) { if(r.next()) throw new SQLException("El pedido ya fue pagado"); }
+                }
+                // Validar el detalle y consultar productos en la misma transacción.
+                int detalles=0;
+                try (PreparedStatement ps=cn.prepareStatement("SELECT d.id_detalle, p.id_producto FROM detalle_pedido d JOIN productos p ON p.id_producto=d.id_producto WHERE d.id_pedido=? FOR UPDATE")) {
+                    ps.setInt(1,id); try(ResultSet r=ps.executeQuery()){while(r.next()) detalles++;}
+                }
+                if(detalles==0) throw new SQLException("El pedido no tiene detalles");
+                int idPago;
+                try (PreparedStatement ps=cn.prepareStatement("INSERT INTO pagos(id_pedido,metodo_pago,monto,estado) VALUES(?,?,?,'Pagado')",Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1,id); ps.setString(2,mapearMetodoPago(v.getMetodoPago())); ps.setBigDecimal(3,java.math.BigDecimal.valueOf(v.getTotal()).setScale(2,java.math.RoundingMode.HALF_UP));
+                    ps.executeUpdate(); try(ResultSet r=ps.getGeneratedKeys()){if(!r.next()) throw new SQLException("No se obtuvo el identificador del pago"); idPago=r.getInt(1);}
+                }
+                try (PreparedStatement ps=cn.prepareStatement("UPDATE pedidos SET estado='Entregado' WHERE id_pedido=?")) {ps.setInt(1,id); if(ps.executeUpdate()!=1)throw new SQLException("No se actualizó el pedido");}
+                patrones.observer.PublicadorPedido publicador=new patrones.observer.PublicadorPedido();
+                publicador.agregar(new patrones.observer.AuditoriaPedido());
+                publicador.publicar(cn,id,estado,"Entregado");
+                if(mesa>0) {
+                    try (PreparedStatement ps=cn.prepareStatement("UPDATE mesas SET estado='Libre' WHERE id_mesa=? AND estado='Ocupada' AND NOT EXISTS (SELECT 1 FROM pedidos WHERE id_mesa=? AND id_pedido<>? AND estado IN ('Pendiente','En preparacion','Listo'))")) {
+                        ps.setInt(1,mesa); ps.setInt(2,mesa); ps.setInt(3,id); ps.executeUpdate();
+                    }
+                }
+                cn.commit();
+                v.setIdVenta(idPago);
+                v.getPedido().setEstado("Entregado");
+            } catch (Exception ex) {
+                try { cn.rollback(); } catch (SQLException rollback) { ex.addSuppressed(rollback); }
+                throw ex;
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             throw new IllegalArgumentException("Error al guardar pago: " + ex.getMessage(), ex);
         }
     }

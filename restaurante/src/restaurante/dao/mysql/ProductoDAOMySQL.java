@@ -28,15 +28,22 @@ public class ProductoDAOMySQL implements ProductoRepositorio {
     public void guardar(Producto p) {
         String sql = "INSERT INTO productos (id_producto, id_categoria, nombre, descripcion, precio, estado) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, p.getId());
+            if (p.getId() == 0) ps.setNull(1, java.sql.Types.INTEGER);
+            else ps.setInt(1, p.getId());
             ps.setInt(2, p.getCategoria().getId());
             ps.setString(3, p.getNombre());
             ps.setString(4, p.getDescripcion());
             ps.setDouble(5, p.getPrecio());
             ps.setString(6, p.isDisponible() ? "Disponible" : "No disponible");
             ps.executeUpdate();
+
+            if (p.getId() == 0) {
+                try (ResultSet claves = ps.getGeneratedKeys()) {
+                    if (claves.next()) p.setId(claves.getInt(1));
+                }
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al guardar producto: " + ex.getMessage(), ex);

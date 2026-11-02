@@ -30,7 +30,7 @@ public class VentaControlador {
     public void cargarPedidos() {
         List<Pedido> disponibles = new ArrayList<>();
         for (Pedido p : Aplicacion.pedido().listar()) {
-            if (p.estaConfirmado()) {
+            if (p.estaConfirmado() && !"Entregado".equalsIgnoreCase(p.getEstado())) {
                 disponibles.add(p);
             }
         }

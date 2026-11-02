@@ -17,7 +17,8 @@ public class ProductoControlador {
 
     public void guardar(int id, String nombre, String descripcion,
             double precio, boolean disponible, Categoria categoria) {
-        if (Aplicacion.producto().buscarPorId(id) != null) {
+        if (id < 0) throw new IllegalArgumentException("El ID debe ser positivo o automático.");
+        if (id > 0 && Aplicacion.producto().buscarPorId(id) != null) {
             throw new IllegalArgumentException(
                     "Ya existe un producto con el ID " + id);
         }

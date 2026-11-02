@@ -202,7 +202,7 @@ public class FrmVenta extends JFrame {
         JPanel botones = new JPanel(new GridLayout(1, 2, 10, 0));
         botones.setOpaque(false);
 
-        JButton btnVolver = boton("VOLVER A PEDIDOS", new Color(71, 85, 105));
+        JButton btnVolver = boton("VOLVER", new Color(71, 85, 105));
         btnVolver.addActionListener(e -> volverAPedidos());
 
         JButton btnCobrar = boton("COBRAR Y GENERAR BOLETA", AZUL);
@@ -217,10 +217,7 @@ public class FrmVenta extends JFrame {
     }
     
     private void volverAPedidos() {
-        if (frmPedidos != null) {
-        frmPedidos.setVisible(true);
         this.dispose();
-        }
     }
 
     private JPanel etiqueta(String texto, java.awt.Component c) {

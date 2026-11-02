@@ -18,8 +18,10 @@ public class DatabaseInitializer {
     public static void inicializar() {
         try {
             crearBaseDatosSiNoExiste();
+            boolean baseVacia = baseSinTablas();
             ejecutarScript("01_schema.sql");
-            ejecutarScript("02_seed.sql");
+            if (baseVacia) { ejecutarScript("02_seed.sql"); }
+            else { System.out.println("[DB] Esquema existente: se omiten datos de ejemplo."); }
             System.out.println("[DB] Base de datos lista.");
         } catch (Exception e) {
             System.err.println("[DB] Error inicializando: " + e.getMessage());
@@ -35,6 +37,13 @@ public class DatabaseInitializer {
             String sql = "CREATE DATABASE IF NOT EXISTS `" + nombre + "` "
                     + "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
             st.executeUpdate(sql);
+        }
+    }
+
+    private static boolean baseSinTablas() throws Exception {
+        try (Connection cn = ConexionDB.getInstancia().conectar();
+             java.sql.ResultSet rs = cn.getMetaData().getTables(cn.getCatalog(), null, "%", new String[]{"TABLE"})) {
+            return !rs.next();
         }
     }
 

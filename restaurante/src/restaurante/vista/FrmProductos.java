@@ -30,6 +30,9 @@ public class FrmProductos extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
 
+        jLabel4.setText("ID (opcional):");
+        txtId.setToolTipText("Deje el ID vacío para que MySQL lo asigne automáticamente");
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         configurarTabla();
         configurarEventos();
@@ -303,7 +306,9 @@ public class FrmProductos extends javax.swing.JFrame {
 
     private void onGuardar() {
         try {
-            int id = Integer.parseInt(txtId.getText().trim());
+            String idTexto = txtId.getText().trim();
+            int id = idTexto.isEmpty() ? 0 : Integer.parseInt(idTexto);
+            if (!idTexto.isEmpty() && id <= 0) throw new IllegalArgumentException("El ID debe ser positivo o dejarse vacío.");
             double precio = Double.parseDouble(txtPrecio.getText().trim());
 
             controlador.guardar(
@@ -316,6 +321,7 @@ public class FrmProductos extends javax.swing.JFrame {
 
             actualizarTabla();
             limpiar();
+            JOptionPane.showMessageDialog(this, "Producto registrado correctamente.");
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this,
                     "ID o Precio tienen formato inválido", "Error",

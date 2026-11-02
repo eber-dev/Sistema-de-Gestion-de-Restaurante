@@ -28,7 +28,10 @@ public class VentaServicio {
         // 1. Guardamos el pago en la BD (o memoria)
         repositorio.guardar(venta);
 
-        // 2. Actualizamos el estado del pedido
+        // La implementación MySQL actualiza pago, pedido, auditoría y mesa en una sola transacción.
+        if (repositorio instanceof restaurante.dao.mysql.VentaDAOMySQL) return;
+
+        // Compatibilidad con implementaciones previas.
         venta.getPedido().entregar();
         restaurante.app.Aplicacion.pedidoDAO().actualizarEstado(
                 venta.getPedido().getIdPedido(),

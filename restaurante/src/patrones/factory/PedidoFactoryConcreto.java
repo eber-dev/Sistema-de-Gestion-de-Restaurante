@@ -1,24 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package patrones.factory;
-
-/**
- *
- * @author Loreley
- */
-
-
+import java.util.Locale;
+import java.util.UUID;
 import restaurante.modelo.Pedido;
 
+/** Crea códigos compatibles con VARCHAR(20) sin reiniciar una secuencia al abrir la aplicación. */
 public class PedidoFactoryConcreto implements PedidoFactory {
-
-    private static int contador = 1;
-
-    @Override
-    public Pedido crearPedido() {
-        String codigo = String.format("PED-%03d", contador++);
-        return new Pedido(codigo);
-    }
+    public static String generarCodigo() { return "PED-" + UUID.randomUUID().toString().replace("-", "").substring(0,16).toUpperCase(Locale.ROOT); }
+    @Override public Pedido crearPedido() { return new Pedido(generarCodigo()); }
 }

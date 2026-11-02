@@ -107,6 +107,9 @@ public class Pedido implements PedidoPrototype {
             case "En preparacion":
                 this.estadoObj = new patrones.state.EstadoEnPreparacion();
                 break;
+            case "Listo":
+                this.estadoObj = new patrones.state.EstadoListo();
+                break;
             case "Entregado":
                 this.estadoObj = new patrones.state.EstadoEntregado();
                 break;
@@ -161,12 +164,13 @@ public class Pedido implements PedidoPrototype {
     }
 
     public double calcularTotal() {
-        double total = 0;
-        for (DetallePedido d : detalles) {
-            total += d.calcularSubtotal();
-        }
-        return total;
+        patrones.composite.TotalCompuesto total = new patrones.composite.TotalCompuesto();
+        for (DetallePedido d : detalles) total.agregar(new patrones.composite.ImporteDetalle(d));
+        return total.calcularTotal();
     }
+
+    public patrones.memento.PedidoMemento crearMemento() { return new patrones.memento.PedidoMemento(getEstado()); }
+    public void restaurar(patrones.memento.PedidoMemento m) { if(m == null) throw new IllegalArgumentException("Memento vacío"); setEstado(m.getEstado()); }
 
     public boolean estaConfirmado() {
         if (estadoObj == null) {
@@ -182,7 +186,7 @@ public class Pedido implements PedidoPrototype {
 
     @Override
     public Pedido clonar() {
-        Pedido copia = new Pedido(this.codigo + "-COPIA");
+        Pedido copia = new Pedido(patrones.factory.PedidoFactoryConcreto.generarCodigo());
         copia.setIdCliente(this.idCliente);
         copia.setIdEmpleado(this.idEmpleado);
         copia.setIdMesa(this.idMesa);

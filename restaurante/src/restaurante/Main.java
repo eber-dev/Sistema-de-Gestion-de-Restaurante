@@ -15,7 +15,14 @@ import restaurante.vista.FrmMenuPrincipal;
 public class Main {
 
     public static void main(String[] args) {
-        Aplicacion.inicializar();
+        try {
+            Aplicacion.inicializar();
+        } catch (Exception ex) {
+            SwingUtilities.invokeLater(() -> javax.swing.JOptionPane.showMessageDialog(null,
+                "No se pudo preparar la base de datos. Revise usuario, contraseña, servidor y db.autoinit.\n" + ex.getMessage(),
+                "Conexión MySQL", javax.swing.JOptionPane.ERROR_MESSAGE));
+            return;
+        }
 
         SwingUtilities.invokeLater(() -> new FrmMenuPrincipal().setVisible(true));
     }

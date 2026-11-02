@@ -17,6 +17,7 @@ public class ConexionDB {
     private final String url;
     private final String user;
     private final String password;
+    private final boolean autoInit;
 
     private ConexionDB(Properties props) {
         String host = props.getProperty("db.host", "localhost");
@@ -25,6 +26,8 @@ public class ConexionDB {
         this.user = props.getProperty("db.user", "root");
         this.password = props.getProperty("db.password", "");
 
+        if (!name.matches("[A-Za-z0-9_]+")) throw new IllegalArgumentException("Nombre de base de datos inválido");
+        this.autoInit = Boolean.parseBoolean(props.getProperty("db.autoinit", "true"));
         this.url = "jdbc:mysql://" + host + ":" + port + "/" + name
                 + "?useSSL=false&serverTimezone=America/Lima"
                 + "&characterEncoding=UTF-8&allowPublicKeyRetrieval=true";
@@ -47,8 +50,20 @@ public class ConexionDB {
         } catch (Exception e) {
             throw new RuntimeException("Error cargando db.properties", e);
         }
+        aplicarEntorno(p, "db.host", "RESTAURANTE_DB_HOST");
+        aplicarEntorno(p, "db.port", "RESTAURANTE_DB_PORT");
+        aplicarEntorno(p, "db.name", "RESTAURANTE_DB_NAME");
+        aplicarEntorno(p, "db.user", "RESTAURANTE_DB_USER");
+        aplicarEntorno(p, "db.password", "RESTAURANTE_DB_PASSWORD");
+        aplicarEntorno(p, "db.autoinit", "RESTAURANTE_DB_AUTOINIT");
         return p;
     }
+
+    private static void aplicarEntorno(Properties p, String propiedad, String variable) {
+        String valor = System.getenv(variable);
+        if (valor != null) p.setProperty(propiedad, valor);
+    }
+    public boolean isAutoInit() { return autoInit; }
 
     /**
      * Abre una nueva conexión a la base de datos del sistema. El usuario es

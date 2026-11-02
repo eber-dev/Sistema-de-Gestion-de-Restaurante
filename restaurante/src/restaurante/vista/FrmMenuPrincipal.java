@@ -58,36 +58,41 @@ public class FrmMenuPrincipal extends JFrame {
         JButton btnClientes = crearBoton("Clientes",
                 UIManager.getDefaults().getColor("Actions.Blue"));
         btnClientes.setBounds(60, 140, 170, 70);
-        btnClientes.addActionListener((ActionEvent e) -> new FrmClientes().setVisible(true));
+        btnClientes.addActionListener((ActionEvent e) -> Navegacion.abrir(this, new FrmClientes()));
         getContentPane().add(btnClientes);
 
         JButton btnCategorias = crearBoton("Categorías",
                 UIManager.getDefaults().getColor("Actions.Green"));
         btnCategorias.setBounds(260, 140, 170, 70);
-        btnCategorias.addActionListener((ActionEvent e) -> new FrmCategorias().setVisible(true));
+        btnCategorias.addActionListener((ActionEvent e) -> Navegacion.abrir(this, new FrmCategorias()));
         getContentPane().add(btnCategorias);
 
         JButton btnProductos = crearBoton("Productos",
                 UIManager.getDefaults().getColor("Actions.Yellow"));
         btnProductos.setBounds(60, 230, 170, 70);
-        btnProductos.addActionListener((ActionEvent e) -> new FrmProductos().setVisible(true));
+        btnProductos.addActionListener((ActionEvent e) -> Navegacion.abrir(this, new FrmProductos()));
         getContentPane().add(btnProductos);
 
         JButton btnPedidos = crearBoton("Pedidos",
                 UIManager.getDefaults().getColor("Actions.Red"));
         btnPedidos.setBounds(260, 230, 170, 70);
-        btnPedidos.addActionListener((ActionEvent e) -> new FrmPedidos().setVisible(true));
+        btnPedidos.addActionListener((ActionEvent e) -> Navegacion.abrir(this, new FrmPedidos()));
         getContentPane().add(btnPedidos);
 
         JButton btnVentas = crearBoton("Ventas",
                 UIManager.getDefaults().getColor("Actions.Blue"));
         btnVentas.setBounds(60, 310, 370, 55);
-        btnVentas.addActionListener((ActionEvent e) -> new FrmVenta().setVisible(true));
+        btnVentas.addActionListener((ActionEvent e) -> Navegacion.abrir(this, new FrmVenta()));
         getContentPane().add(btnVentas);
+
+        JButton btnReportes = crearBoton("Reportes", new Color(71, 85, 105));
+        btnReportes.setBounds(60, 375, 170, 45);
+        btnReportes.addActionListener(e -> Navegacion.abrir(this, new FrmReportes()));
+        getContentPane().add(btnReportes);
 
         JButton btnSalir = new JButton("Salir del Sistema");
         btnSalir.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnSalir.setBounds(150, 375, 200, 45);
+        btnSalir.setBounds(260, 375, 170, 45);
         btnSalir.setBackground(new Color(60, 60, 60));
         btnSalir.setForeground(Color.WHITE);
         btnSalir.setFocusPainted(false);

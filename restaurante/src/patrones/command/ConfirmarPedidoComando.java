@@ -19,7 +19,8 @@ public class ConfirmarPedidoComando implements Comando {
 
     @Override
     public void ejecutar() {
-        pedido.confirmar();
-        repositorio.guardar(pedido);
+        patrones.memento.PedidoMemento anterior = pedido.crearMemento();
+        try { pedido.confirmar(); repositorio.guardar(pedido); }
+        catch (RuntimeException ex) { pedido.restaurar(anterior); throw ex; }
     }
 }

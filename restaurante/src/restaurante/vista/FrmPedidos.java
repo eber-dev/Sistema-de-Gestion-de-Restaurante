@@ -430,7 +430,7 @@ public class FrmPedidos extends JFrame {
         try {
             controlador.confirmarPedido(pedidoActual);
             actualizarTablaPedidos();
-            JOptionPane.showMessageDialog(this, "Pedido confirmado y guardado en MySQL.");
+            JOptionPane.showMessageDialog(this, "Pedido confirmado correctamente.");
             limpiarFormularioPedido();
         } catch (IllegalArgumentException | IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
@@ -493,8 +493,7 @@ public class FrmPedidos extends JFrame {
     }
 
     private void onIrVentas() {
-        new FrmVenta(this).setVisible(true);
-        this.setVisible(false);
+        Navegacion.abrir(this, new FrmVenta(this));
     }
 
     // ====== Tablas y limpieza ======
