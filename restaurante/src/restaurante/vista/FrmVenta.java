@@ -129,37 +129,48 @@ public class FrmVenta extends JFrame {
         JLabel t = new JLabel("Registrar venta");
         t.setFont(new Font("Segoe UI", Font.BOLD, 17));
 
-        JPanel form = new JPanel(new GridLayout(2, 1, 0, 8));
+        // los combos conservan su altura natural; el detalle ocupa el espacio libre
+        JPanel form = new JPanel(new GridLayout(2, 1, 0, 10));
         form.setOpaque(false);
         form.add(etiqueta("Pedido confirmado", cboPedidos));
         form.add(etiqueta("Método de pago", cboMetodoPago));
+
+        JPanel norte = new JPanel(new BorderLayout(0, 14));
+        norte.setOpaque(false);
+        norte.add(t, BorderLayout.NORTH);
+        norte.add(form, BorderLayout.CENTER);
 
         txtDetalle.setEditable(false);
         txtDetalle.setFont(new Font("Consolas", Font.PLAIN, 12));
         txtDetalle.setLineWrap(true);
         txtDetalle.setWrapStyleWord(true);
+        txtDetalle.setMargin(new java.awt.Insets(8, 10, 8, 10));
+        txtDetalle.setBackground(new Color(0xFBF8F3));
+        txtDetalle.setForeground(Tema.TEXTO);
         txtDetalle.setText("Selecciona un pedido para ver su detalle.");
 
-        JScrollPane scroll = new JScrollPane(txtDetalle);
-        scroll.setBorder(BorderFactory.createTitledBorder("Detalle del pedido"));
+        JLabel lblDetalle = new JLabel("Detalle del pedido");
+        lblDetalle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JPanel detalle = new JPanel(new BorderLayout(0, 5));
+        detalle.setOpaque(false);
+        detalle.add(lblDetalle, BorderLayout.NORTH);
+        detalle.add(new JScrollPane(txtDetalle), BorderLayout.CENTER);
 
         JPanel totalPanel = new JPanel(new BorderLayout());
         totalPanel.setOpaque(false);
-        JLabel lbl = new JLabel("TOTAL:");
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblTotal.setForeground(AZUL);
+        totalPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE6DED1)),
+                BorderFactory.createEmptyBorder(10, 0, 0, 0)));
+        JLabel lbl = new JLabel("Total a cobrar");
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblTotal.setFont(new Font(Tema.FUENTE_TITULO, Font.BOLD, 24));
+        lblTotal.setForeground(Tema.VERDE);
         totalPanel.add(lbl, BorderLayout.WEST);
         totalPanel.add(lblTotal, BorderLayout.EAST);
 
-        JPanel sur = new JPanel(new BorderLayout(0, 10));
-        sur.setOpaque(false);
-        sur.add(scroll, BorderLayout.CENTER);
-        sur.add(totalPanel, BorderLayout.SOUTH);
-
-        p.add(t, BorderLayout.NORTH);
-        p.add(form, BorderLayout.CENTER);
-        p.add(sur, BorderLayout.SOUTH);
+        p.add(norte, BorderLayout.NORTH);
+        p.add(detalle, BorderLayout.CENTER);
+        p.add(totalPanel, BorderLayout.SOUTH);
         return p;
     }
 
@@ -173,9 +184,10 @@ public class FrmVenta extends JFrame {
         JLabel t = new JLabel("Historial de ventas");
         t.setFont(new Font("Segoe UI", Font.BOLD, 17));
 
-        JPanel busqueda = new JPanel();
+        JPanel busqueda = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 0));
         busqueda.setOpaque(false);
-        busqueda.add(new JLabel("Código:"));
+        txtBuscar.putClientProperty("JTextField.placeholderText", "Ej. 12");
+        busqueda.add(new JLabel("Código de venta:"));
         busqueda.add(txtBuscar);
         JButton btnBuscar = boton("Buscar", new Color(71, 85, 105));
         btnBuscar.addActionListener(e -> buscar());
@@ -199,13 +211,13 @@ public class FrmVenta extends JFrame {
         JLabel nota = new JLabel("Selecciona un pedido y método de pago para cobrar.");
         nota.setForeground(new Color(100, 116, 139));
 
-        JPanel botones = new JPanel(new GridLayout(1, 2, 10, 0));
+        JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 0));
         botones.setOpaque(false);
 
-        JButton btnVolver = boton("VOLVER", new Color(71, 85, 105));
+        JButton btnVolver = boton("Volver", new Color(71, 85, 105));
         btnVolver.addActionListener(e -> volverAPedidos());
 
-        JButton btnCobrar = boton("COBRAR Y GENERAR BOLETA", AZUL);
+        JButton btnCobrar = boton("Cobrar y generar boleta", AZUL);
         btnCobrar.addActionListener(e -> controlador.cobrar());
 
         botones.add(btnVolver);
