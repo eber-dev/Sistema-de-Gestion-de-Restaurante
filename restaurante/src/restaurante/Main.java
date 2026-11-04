@@ -15,6 +15,7 @@ import restaurante.vista.FrmMenuPrincipal;
 public class Main {
 
     public static void main(String[] args) {
+        restaurante.vista.Tema.instalar();
         try {
             Aplicacion.inicializar();
         } catch (Exception ex) {

@@ -22,6 +22,7 @@ public class FrmClientes extends javax.swing.JFrame {
     public FrmClientes() {
         initComponents();
         this.setTitle("Clientes");
+        this.setSize(Math.max(getWidth(), 700), getHeight()); // más espacio para la tabla
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

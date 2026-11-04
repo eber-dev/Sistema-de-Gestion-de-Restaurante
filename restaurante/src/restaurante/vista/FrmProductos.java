@@ -27,6 +27,7 @@ public class FrmProductos extends javax.swing.JFrame {
     public FrmProductos() {
         initComponents();
         this.setTitle("Productos");
+        this.setSize(Math.max(getWidth(), 700), getHeight()); // más espacio para la tabla
         this.setLocationRelativeTo(null);
         this.setResizable(false);
 
