@@ -26,12 +26,55 @@ public class FrmReportes extends JFrame {
     private net.sf.jasperreports.engine.JasperPrint ultimoReporte;
     public FrmReportes() {
         super("Reportes del restaurante"); setDefaultCloseOperation(DISPOSE_ON_CLOSE); setSize(1000,700); setLocationRelativeTo(null);
-        JPanel filtros=new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filtros.add(new JLabel("Reporte:")); filtros.add(tipo);
-        filtros.add(new JLabel("Desde (AAAA-MM-DD):")); filtros.add(desde); filtros.add(new JLabel("Hasta:")); filtros.add(hasta);
+        getContentPane().setBackground(Tema.CREMA);
+        getContentPane().setLayout(new BorderLayout(0, 14));
+
+        // encabezado
+        JPanel encabezado = new JPanel(new java.awt.GridLayout(2, 1));
+        encabezado.setBackground(new java.awt.Color(31, 41, 55));
+        encabezado.setBorder(javax.swing.BorderFactory.createEmptyBorder(16, 24, 16, 24));
+        JLabel titulo = new JLabel("Reportes");
+        titulo.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 22));
+        JLabel sub = new JLabel("Ventas y productos vendidos por periodo, con gráfico y exportación a PDF");
+        sub.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        encabezado.add(titulo); encabezado.add(sub);
+
+        // filtros en una tarjeta
+        JPanel filtros=new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        filtros.setBackground(java.awt.Color.WHITE);
+        desde.putClientProperty("JTextField.placeholderText", "AAAA-MM-DD");
+        hasta.putClientProperty("JTextField.placeholderText", "AAAA-MM-DD");
+        desde.setToolTipText("Formato AAAA-MM-DD"); hasta.setToolTipText("Formato AAAA-MM-DD");
+        filtros.add(new JLabel("Reporte")); filtros.add(tipo);
+        filtros.add(javax.swing.Box.createHorizontalStrut(6));
+        filtros.add(new JLabel("Desde")); filtros.add(desde); filtros.add(new JLabel("Hasta")); filtros.add(hasta);
+        filtros.add(javax.swing.Box.createHorizontalStrut(6));
         JButton generar=new JButton("Generar reporte"); generar.addActionListener(e->generar()); filtros.add(generar);
         JButton pdf=new JButton("Guardar PDF"); pdf.addActionListener(e->guardarPdf()); filtros.add(pdf);
-        add(filtros,BorderLayout.NORTH); add(pestanas,BorderLayout.CENTER);
+        getRootPane().setDefaultButton(generar);
+
+        JPanel norte = new JPanel(new BorderLayout(0, 14));
+        norte.setOpaque(false);
+        norte.add(encabezado, BorderLayout.NORTH);
+        JPanel margenFiltros = new JPanel(new BorderLayout());
+        margenFiltros.setOpaque(false);
+        margenFiltros.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        margenFiltros.add(filtros);
+        norte.add(margenFiltros, BorderLayout.SOUTH);
+
+        // estado vacío hasta que se genere un reporte
+        JLabel vacio = new JLabel("<html><div style='text-align:center'><b style='font-size:13px'>Aún no hay un reporte generado</b><br><br>"
+                + "Elija el tipo de reporte y el periodo, luego pulse <b>Generar reporte</b>.<br>"
+                + "Verá el informe y su gráfico en pestañas.</div></html>", javax.swing.SwingConstants.CENTER);
+        vacio.setForeground(Tema.TEXTO_SUAVE);
+        pestanas.addTab("Informe", vacio);
+
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.setOpaque(false);
+        centro.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        centro.add(pestanas);
+
+        add(norte,BorderLayout.NORTH); add(centro,BorderLayout.CENTER);
     }
     private void guardarPdf() {
         if(ultimoReporte==null) { JOptionPane.showMessageDialog(this,"Genere primero el reporte."); return; }
