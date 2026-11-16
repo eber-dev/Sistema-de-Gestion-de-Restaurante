@@ -85,6 +85,7 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
                 }
             }
 
+            AuditoriaDAO.registrar(cn, "pedidos", String.valueOf(idPedidoGenerado), "CREAR", "Código: " + p.getCodigo());
             cn.commit();
             p.setIdPedido(idPedidoGenerado);
             } catch (SQLException | RuntimeException ex) {
@@ -175,6 +176,7 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
                 ps.executeUpdate();
             }
 
+            AuditoriaDAO.registrar(cn, "pedidos", String.valueOf(idPedido), "ELIMINAR", "Código: " + codigo);
             cn.commit();
             return true;
             } catch (SQLException | RuntimeException ex) {
@@ -261,9 +263,18 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
     public void actualizarEstado(int idPedido, String nuevoEstado) {
         String sql = "UPDATE pedidos SET estado=? WHERE id_pedido=?";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, nuevoEstado);
-            ps.setInt(2, idPedido);
-            ps.executeUpdate();
+            cn.setAutoCommit(false);
+            try {
+                ps.setString(1, nuevoEstado);
+                ps.setInt(2, idPedido);
+                if (ps.executeUpdate() > 0) {
+                    AuditoriaDAO.registrar(cn, "pedidos", String.valueOf(idPedido), "CAMBIAR_ESTADO", "Nuevo estado: " + nuevoEstado);
+                }
+                cn.commit();
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al actualizar estado: " + ex.getMessage(), ex);
         }

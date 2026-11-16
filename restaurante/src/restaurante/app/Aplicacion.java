@@ -60,6 +60,10 @@ public class Aplicacion {
         try {
             if (restaurante.config.ConexionDB.getInstancia().isAutoInit()) {
                 restaurante.config.DatabaseInitializer.inicializar();
+            } else {
+                try (java.sql.Connection cn = restaurante.config.ConexionDB.getInstancia().conectar()) {
+                    // Comprobar la conexión también cuando no se inicializa el esquema.
+                }
             }
         } catch (Exception ex) {
             throw new IllegalStateException("No se pudo inicializar la base de datos. Revise la conexión y los permisos.", ex);

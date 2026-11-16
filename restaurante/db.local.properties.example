@@ -1,0 +1,9 @@
+# Copie este archivo como db.local.properties en esta carpeta.
+# El archivo personal está excluido de Git. Nunca escriba su clave aquí.
+db.user=root
+db.password=
+# Si usa una conexión distinta, quite el # y ajuste los valores:
+# db.host=localhost
+# db.port=3306
+# db.name=restaurante_intermedio
+# db.autoinit=true

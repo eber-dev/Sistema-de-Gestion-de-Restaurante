@@ -5,6 +5,8 @@
 package restaurante.config;
 
 import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -49,6 +51,16 @@ public class ConexionDB {
             p.load(is);
         } catch (Exception e) {
             throw new RuntimeException("Error cargando db.properties", e);
+        }
+        // Configuración personal fuera del JAR y excluida de Git.
+        String local = System.getProperty("restaurante.config", "db.local.properties");
+        File archivoLocal = new File(local);
+        if (archivoLocal.isFile()) {
+            try (java.io.Reader reader = new java.io.InputStreamReader(new FileInputStream(archivoLocal), java.nio.charset.StandardCharsets.UTF_8)) {
+                p.load(reader);
+            } catch (Exception e) {
+                throw new IllegalStateException("No se pudo leer el archivo de configuración local.", e);
+            }
         }
         aplicarEntorno(p, "db.host", "RESTAURANTE_DB_HOST");
         aplicarEntorno(p, "db.port", "RESTAURANTE_DB_PORT");

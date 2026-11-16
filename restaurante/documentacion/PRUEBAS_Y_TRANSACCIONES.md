@@ -1,5 +1,7 @@
 # Transacciones, cambios y pruebas
 
+**Actualización:** la versión con auditoría se probó también con una instancia MySQL 8.4 aislada. Consulte `AUDITORIA_Y_EJECUCION.md` para los resultados actuales. Las secciones siguientes documentan las pruebas de la versión anterior.
+
 ## Operaciones transaccionales principales
 
 El requisito acordado cuenta tablas consultadas y modificadas. Las lecturas no equivalen a actualizaciones.
