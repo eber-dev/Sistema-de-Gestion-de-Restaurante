@@ -20,6 +20,7 @@ public class DatabaseInitializer {
             crearBaseDatosSiNoExiste();
             boolean baseVacia = baseSinTablas();
             ejecutarScript("01_schema.sql");
+            ejecutarScript("03_auditoria.sql");
             if (baseVacia) { ejecutarScript("02_seed.sql"); }
             else { System.out.println("[DB] Esquema existente: se omiten datos de ejemplo."); }
             System.out.println("[DB] Base de datos lista.");

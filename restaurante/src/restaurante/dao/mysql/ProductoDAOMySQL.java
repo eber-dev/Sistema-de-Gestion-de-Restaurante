@@ -29,20 +29,32 @@ public class ProductoDAOMySQL implements ProductoRepositorio {
         String sql = "INSERT INTO productos (id_producto, id_categoria, nombre, descripcion, precio, estado) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            cn.setAutoCommit(false);
+            try {
 
-            if (p.getId() == 0) ps.setNull(1, java.sql.Types.INTEGER);
-            else ps.setInt(1, p.getId());
-            ps.setInt(2, p.getCategoria().getId());
-            ps.setString(3, p.getNombre());
-            ps.setString(4, p.getDescripcion());
-            ps.setDouble(5, p.getPrecio());
-            ps.setString(6, p.isDisponible() ? "Disponible" : "No disponible");
-            ps.executeUpdate();
+                if (p.getId() == 0) ps.setNull(1, java.sql.Types.INTEGER);
+                else ps.setInt(1, p.getId());
+                ps.setInt(2, p.getCategoria().getId());
+                ps.setString(3, p.getNombre());
+                ps.setString(4, p.getDescripcion());
+                ps.setDouble(5, p.getPrecio());
+                ps.setString(6, p.isDisponible() ? "Disponible" : "No disponible");
+                int afectados = ps.executeUpdate();
 
-            if (p.getId() == 0) {
-                try (ResultSet claves = ps.getGeneratedKeys()) {
-                    if (claves.next()) p.setId(claves.getInt(1));
+                int idAuditoria = p.getId();
+                if (idAuditoria == 0) {
+                    try (ResultSet claves = ps.getGeneratedKeys()) {
+                        if (!claves.next()) throw new SQLException("No se obtuvo el ID del producto");
+                        idAuditoria = claves.getInt(1);
+                    }
                 }
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "productos", String.valueOf(idAuditoria), "CREAR", DetalleAuditoria.creacion("productos", DetalleAuditoria.producto(p)));
+                cn.commit();
+                p.setId(idAuditoria);
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
             }
 
         } catch (SQLException ex) {
@@ -55,14 +67,24 @@ public class ProductoDAOMySQL implements ProductoRepositorio {
         String sql = "UPDATE productos SET id_categoria=?, nombre=?, descripcion=?, precio=?, estado=? "
                 + "WHERE id_producto=?";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            cn.setAutoCommit(false);
+            try {
+                java.util.Map<String, String> anterior = DetalleAuditoria.leerAnterior(cn, "productos", p.getId());
 
-            ps.setInt(1, p.getCategoria().getId());
-            ps.setString(2, p.getNombre());
-            ps.setString(3, p.getDescripcion());
-            ps.setDouble(4, p.getPrecio());
-            ps.setString(5, p.isDisponible() ? "Disponible" : "No disponible");
-            ps.setInt(6, p.getId());
-            ps.executeUpdate();
+                ps.setInt(1, p.getCategoria().getId());
+                ps.setString(2, p.getNombre());
+                ps.setString(3, p.getDescripcion());
+                ps.setDouble(4, p.getPrecio());
+                ps.setString(5, p.isDisponible() ? "Disponible" : "No disponible");
+                ps.setInt(6, p.getId());
+                int afectados = ps.executeUpdate();
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "productos", String.valueOf(p.getId()), "ACTUALIZAR", DetalleAuditoria.cambio("productos", anterior, DetalleAuditoria.producto(p)));
+                cn.commit();
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al actualizar producto: " + ex.getMessage(), ex);
@@ -73,9 +95,19 @@ public class ProductoDAOMySQL implements ProductoRepositorio {
     public void eliminar(int id) {
         String sql = "DELETE FROM productos WHERE id_producto=?";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            cn.setAutoCommit(false);
+            try {
+                java.util.Map<String, String> anterior = DetalleAuditoria.leerAnterior(cn, "productos", id);
 
-            ps.setInt(1, id);
-            ps.executeUpdate();
+                ps.setInt(1, id);
+                int afectados = ps.executeUpdate();
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "productos", String.valueOf(id), "ELIMINAR", DetalleAuditoria.eliminacion("productos", anterior));
+                cn.commit();
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al eliminar producto: " + ex.getMessage(), ex);

@@ -61,6 +61,7 @@ public class VentaDAOMySQL implements VentaRepositorio {
                         ps.setInt(1,mesa); ps.setInt(2,mesa); ps.setInt(3,id); ps.executeUpdate();
                     }
                 }
+                AuditoriaDAO.registrar(cn, "pagos", String.valueOf(idPago), "COBRAR", DetalleAuditoria.limitar("Pedido: " + v.getPedido().getCodigo() + " (ID " + id + "); método: " + v.getMetodoPago() + "; total: S/ " + String.format(java.util.Locale.ROOT, "%.2f", v.getTotal())));
                 cn.commit();
                 v.setIdVenta(idPago);
                 v.getPedido().setEstado("Entregado");

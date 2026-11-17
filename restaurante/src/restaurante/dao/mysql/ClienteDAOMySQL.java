@@ -21,15 +21,32 @@ public class ClienteDAOMySQL implements ClienteRepositorio {
     public void guardar(Cliente c) {
         String sql = "INSERT INTO clientes (id_cliente, nombre, apellido, telefono, correo, direccion) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            cn.setAutoCommit(false);
+            try {
 
-            ps.setInt(1, c.getId());
-            ps.setString(2, c.getNombre());
-            ps.setString(3, c.getApellido());
-            ps.setString(4, c.getTelefono());
-            ps.setString(5, c.getCorreo());
-            ps.setString(6, c.getDireccion());
-            ps.executeUpdate();
+                ps.setInt(1, c.getId());
+                ps.setString(2, c.getNombre());
+                ps.setString(3, c.getApellido());
+                ps.setString(4, c.getTelefono());
+                ps.setString(5, c.getCorreo());
+                ps.setString(6, c.getDireccion());
+                int afectados = ps.executeUpdate();
+                int idAuditoria = c.getId();
+                if (idAuditoria == 0) {
+                    try (ResultSet claves = ps.getGeneratedKeys()) {
+                        if (!claves.next()) throw new SQLException("No se obtuvo el ID generado");
+                        idAuditoria = claves.getInt(1);
+                    }
+                }
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "clientes", String.valueOf(idAuditoria), "CREAR", DetalleAuditoria.creacion("clientes", DetalleAuditoria.cliente(c)));
+                cn.commit();
+                c.setId(idAuditoria);
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al guardar cliente: " + ex.getMessage(), ex);
@@ -41,14 +58,24 @@ public class ClienteDAOMySQL implements ClienteRepositorio {
         String sql = "UPDATE clientes SET nombre=?, apellido=?, telefono=?, correo=?, direccion=? "
                 + "WHERE id_cliente=?";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            cn.setAutoCommit(false);
+            try {
+                java.util.Map<String, String> anterior = DetalleAuditoria.leerAnterior(cn, "clientes", c.getId());
 
-            ps.setString(1, c.getNombre());
-            ps.setString(2, c.getApellido());
-            ps.setString(3, c.getTelefono());
-            ps.setString(4, c.getCorreo());
-            ps.setString(5, c.getDireccion());
-            ps.setInt(6, c.getId());
-            ps.executeUpdate();
+                ps.setString(1, c.getNombre());
+                ps.setString(2, c.getApellido());
+                ps.setString(3, c.getTelefono());
+                ps.setString(4, c.getCorreo());
+                ps.setString(5, c.getDireccion());
+                ps.setInt(6, c.getId());
+                int afectados = ps.executeUpdate();
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "clientes", String.valueOf(c.getId()), "ACTUALIZAR", DetalleAuditoria.cambio("clientes", anterior, DetalleAuditoria.cliente(c)));
+                cn.commit();
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al actualizar cliente: " + ex.getMessage(), ex);
@@ -59,9 +86,19 @@ public class ClienteDAOMySQL implements ClienteRepositorio {
     public void eliminar(int id) {
         String sql = "DELETE FROM clientes WHERE id_cliente=?";
         try (Connection cn = ConexionDB.getInstancia().conectar(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            cn.setAutoCommit(false);
+            try {
+                java.util.Map<String, String> anterior = DetalleAuditoria.leerAnterior(cn, "clientes", id);
 
-            ps.setInt(1, id);
-            ps.executeUpdate();
+                ps.setInt(1, id);
+                int afectados = ps.executeUpdate();
+
+                if (afectados > 0) AuditoriaDAO.registrar(cn, "clientes", String.valueOf(id), "ELIMINAR", DetalleAuditoria.eliminacion("clientes", anterior));
+                cn.commit();
+            } catch (SQLException | RuntimeException ex) {
+                try { cn.rollback(); } catch (SQLException r) { ex.addSuppressed(r); }
+                throw ex;
+            }
 
         } catch (SQLException ex) {
             throw new IllegalArgumentException("Error al eliminar cliente: " + ex.getMessage(), ex);

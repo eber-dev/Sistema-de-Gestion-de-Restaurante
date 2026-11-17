@@ -296,7 +296,14 @@ public class FrmMenuPrincipal extends JFrame {
         });
 
         pie.add(info, BorderLayout.WEST);
-        pie.add(btnSalir, BorderLayout.EAST);
+        JButton btnAuditoria = new JButton("Ver auditoría");
+        Tema.estilizarBoton(btnAuditoria);
+        btnAuditoria.addActionListener(e -> Navegacion.abrir(this, new FrmAuditoria()));
+        JPanel botonesPie = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        botonesPie.setOpaque(false);
+        botonesPie.add(btnAuditoria);
+        botonesPie.add(btnSalir);
+        pie.add(botonesPie, BorderLayout.EAST);
         return pie;
     }
 
