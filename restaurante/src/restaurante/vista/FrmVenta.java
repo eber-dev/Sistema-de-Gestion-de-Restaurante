@@ -43,6 +43,9 @@ public class FrmVenta extends JFrame {
     private final JTextArea txtDetalle = new JTextArea();
     private final JTextField txtBuscar = new JTextField(8);
     private final JLabel lblTotal = new JLabel("S/ 0.00");
+    private final JLabel lblSubtotal = new JLabel("S/ --", JLabel.RIGHT);
+    private final JLabel lblDescuento = new JLabel("S/ --", JLabel.RIGHT);
+    private final JLabel lblIgv = new JLabel("S/ --", JLabel.RIGHT);
     private final JTable tblHistorial;
     private final DefaultTableModel modeloTabla;
     private final VentaControlador controlador;
@@ -156,17 +159,30 @@ public class FrmVenta extends JFrame {
         detalle.add(lblDetalle, BorderLayout.NORTH);
         detalle.add(new JScrollPane(txtDetalle), BorderLayout.CENTER);
 
-        JPanel totalPanel = new JPanel(new BorderLayout());
+        JPanel totalPanel = new JPanel(new BorderLayout(0, 8));
         totalPanel.setOpaque(false);
         totalPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE6DED1)),
                 BorderFactory.createEmptyBorder(10, 0, 0, 0)));
+        JPanel desglose = new JPanel(new GridLayout(3, 2, 8, 3));
+        desglose.setOpaque(false);
+        desglose.add(new JLabel("Subtotal"));
+        desglose.add(lblSubtotal);
+        desglose.add(new JLabel("Descuento"));
+        desglose.add(lblDescuento);
+        desglose.add(new JLabel("IGV (18 %)"));
+        desglose.add(lblIgv);
+        totalPanel.add(desglose, BorderLayout.NORTH);
+
+        JPanel total = new JPanel(new BorderLayout());
+        total.setOpaque(false);
         JLabel lbl = new JLabel("Total a cobrar");
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblTotal.setFont(new Font(Tema.FUENTE_TITULO, Font.BOLD, 24));
         lblTotal.setForeground(Tema.VERDE);
-        totalPanel.add(lbl, BorderLayout.WEST);
-        totalPanel.add(lblTotal, BorderLayout.EAST);
+        total.add(lbl, BorderLayout.WEST);
+        total.add(lblTotal, BorderLayout.EAST);
+        totalPanel.add(total, BorderLayout.CENTER);
 
         p.add(norte, BorderLayout.NORTH);
         p.add(detalle, BorderLayout.CENTER);
@@ -208,7 +224,7 @@ public class FrmVenta extends JFrame {
         p.setOpaque(false);
         p.setBorder(BorderFactory.createEmptyBorder(0, 20, 18, 20));
 
-        JLabel nota = new JLabel("Selecciona un pedido y método de pago para cobrar.");
+        JLabel nota = new JLabel("<html>Selecciona un pedido y método de pago.<br>Tarjeta y billetera son simulaciones.</html>");
         nota.setForeground(new Color(100, 116, 139));
 
         JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 0));
@@ -255,6 +271,7 @@ public class FrmVenta extends JFrame {
 
     private void configurarEventos() {
         cboPedidos.addActionListener(e -> mostrarPedidoSeleccionado());
+        cboMetodoPago.addActionListener(e -> mostrarPedidoSeleccionado());
     }
 
     // ----------- ADAPTADO A TU Pedido/DetallePedido -----------
@@ -263,6 +280,7 @@ public class FrmVenta extends JFrame {
         if (pedido == null) {
             txtDetalle.setText("Sin pedidos confirmados disponibles.");
             lblTotal.setText("S/ 0.00");
+            limpiarDesglose();
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -279,7 +297,28 @@ public class FrmVenta extends JFrame {
                     .append("\n");
         }
         txtDetalle.setText(sb.toString());
-        lblTotal.setText(String.format("S/ %.2f", pedido.calcularTotal()));
+        MetodoPago metodo = getMetodoPagoSeleccionado();
+        if (metodo == null) {
+            lblTotal.setText("S/ --");
+            limpiarDesglose();
+        } else {
+            try {
+                Venta venta = controlador.calcularVenta(pedido, metodo);
+                lblSubtotal.setText(String.format("S/ %.2f", venta.getOpvGravado()));
+                lblDescuento.setText(String.format("- S/ %.2f", venta.getDescuento()));
+                lblIgv.setText(String.format("S/ %.2f", venta.getIgv()));
+                lblTotal.setText(String.format("S/ %.2f", venta.getTotal()));
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                lblTotal.setText("S/ --");
+                limpiarDesglose();
+            }
+        }
+    }
+
+    private void limpiarDesglose() {
+        lblSubtotal.setText("S/ --");
+        lblDescuento.setText("S/ --");
+        lblIgv.setText("S/ --");
     }
 
     private void buscar() {
@@ -310,6 +349,8 @@ public class FrmVenta extends JFrame {
 
     public void cargarMetodosPago(MetodoPago[] metodos) {
         cboMetodoPago.setModel(new DefaultComboBoxModel<>(metodos));
+        cboMetodoPago.setSelectedItem(MetodoPago.EFECTIVO);
+        mostrarPedidoSeleccionado();
     }
 
     public void mostrarHistorial(List<Venta> ventas) {
@@ -322,7 +363,7 @@ public class FrmVenta extends JFrame {
                 v.getPedido().getCliente(),
                 v.getMetodoPago(),
                 String.format("S/ %.2f", v.getTotal()),
-                v.getFecha().format(f)
+                v.getFecha() == null ? "No registrada" : v.getFecha().format(f)
             });
         }
     }
@@ -336,15 +377,19 @@ public class FrmVenta extends JFrame {
     }
 
     public void mostrarDetalleVenta(Venta v) {
+        String desglose = v.isDesgloseDisponible()
+                ? "\nOPV    : S/ " + String.format("%.2f", v.getOpvGravado())
+                  + "\nDesc.  : S/ " + String.format("%.2f", v.getDescuento())
+                  + "\nIGV    : S/ " + String.format("%.2f", v.getIgv())
+                : "\nSubtotal del pedido: S/ " + String.format("%.2f", v.getOpvGravado())
+                  + "\nEl desglose histórico de descuento e IGV no está disponible.";
         String txt = "Venta #" + v.getIdVenta()
                 + "\nPedido : #" + v.getPedido().getCodigo()
                 + "\nCliente: " + v.getPedido().getCliente()
                 + "\nPago   : " + v.getMetodoPago()
-                + "\nOPV    : S/ " + String.format("%.2f", v.getOpvGravado())
-                + "\nDesc.  : S/ " + String.format("%.2f", v.getDescuento())
-                + "\nIGV    : S/ " + String.format("%.2f", v.getIgv())
+                + desglose
                 + "\nTOTAL  : S/ " + String.format("%.2f", v.getTotal())
-                + "\nFecha  : " + v.getFecha();
+                + "\nFecha  : " + (v.getFecha() == null ? "No registrada" : v.getFecha());
         JOptionPane.showMessageDialog(this, txt, "Detalle de venta",
                 JOptionPane.INFORMATION_MESSAGE);
     }

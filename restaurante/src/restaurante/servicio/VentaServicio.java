@@ -62,15 +62,23 @@ public class VentaServicio {
         calculo = new patrones.decorator.DescuentoDecorator(calculo, metodo.getDescuento());
 
         // 3. Calculamos los totales
-        double opv = pedido.calcularTotal();
-        double totalConDescuento = calculo.calcularTotal();
-        double descuentoAplicado = opv - totalConDescuento;
+        java.math.BigDecimal opvDecimal = centavos(pedido.calcularTotal());
+        java.math.BigDecimal neto = centavos(calculo.calcularTotal());
+        java.math.BigDecimal descuentoDecimal = opvDecimal.subtract(neto);
 
-        // El IGV (18%) se suma sobre el total ya descontado
-        double igv = totalConDescuento * IGV;
-        double totalFinal = totalConDescuento + igv;
+        // Redondear cada importe a centavos mantiene coherentes boleta y pago.
+        java.math.BigDecimal igvDecimal = neto.multiply(java.math.BigDecimal.valueOf(IGV))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+        double opv = opvDecimal.doubleValue();
+        double descuentoAplicado = descuentoDecimal.doubleValue();
+        double igv = igvDecimal.doubleValue();
+        double totalFinal = neto.add(igvDecimal).doubleValue();
 
         return new Venta(0, pedido, metodo, opv, descuentoAplicado, igv, totalFinal);
+    }
+
+    private static java.math.BigDecimal centavos(double monto) {
+        return java.math.BigDecimal.valueOf(monto).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     private double calcularOPV(Pedido pedido) {

@@ -138,18 +138,19 @@ public class VentaDAOMySQL implements VentaRepositorio {
 
         double montoTotal = rs.getDouble("monto");
 
-        // Calculamos inversamente para la boleta (IGV incluido en el monto)
-        double opv = montoTotal / 1.18;
-        double igv = montoTotal - opv;
+        // El pago guarda el monto, pero no el desglose histórico de impuestos y descuento.
+        double opv = rs.getDouble("total_pedido");
+        java.sql.Timestamp fechaPago = rs.getTimestamp("fecha_pago");
 
         Venta v = new Venta(
                 rs.getInt("id_pago"),
                 p,
                 mapearMetodoPagoInverso(rs.getString("metodo_pago")),
                 opv,
-                0.0, // descuento
-                igv,
-                montoTotal
+                0.0,
+                0.0,
+                montoTotal,
+                fechaPago == null ? null : fechaPago.toLocalDateTime()
         );
 
         return v;

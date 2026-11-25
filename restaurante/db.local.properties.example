@@ -1,8 +1,7 @@
-# Copie este archivo como db.local.properties en esta carpeta.
-# El archivo personal está excluido de Git. Nunca escriba su clave aquí.
+# Copie este archivo como db.local.properties y use sus credenciales locales.
+# No escriba contraseñas en este archivo de ejemplo compartido.
 db.user=root
 db.password=
-# Si usa una conexión distinta, quite el # y ajuste los valores:
 # db.host=localhost
 # db.port=3306
 # db.name=restaurante_intermedio

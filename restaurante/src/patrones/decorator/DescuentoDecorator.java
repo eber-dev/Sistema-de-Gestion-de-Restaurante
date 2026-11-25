@@ -16,7 +16,9 @@ public class DescuentoDecorator implements Calculable {
 
     @Override
     public double calcularTotal() {
-        return envuelto.calcularTotal() * (1.0 - porcentajeDescuento);
+        java.math.BigDecimal importe = java.math.BigDecimal.valueOf(envuelto.calcularTotal());
+        java.math.BigDecimal factor = java.math.BigDecimal.ONE.subtract(java.math.BigDecimal.valueOf(porcentajeDescuento));
+        return importe.multiply(factor).doubleValue();
     }
 
     @Override

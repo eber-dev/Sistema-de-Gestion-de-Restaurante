@@ -42,8 +42,8 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
             if(p.getIdMesa()>0) try(PreparedStatement ps=cn.prepareStatement("SELECT id_mesa FROM mesas WHERE id_mesa=? FOR UPDATE")) {
                 ps.setInt(1,p.getIdMesa());try(ResultSet r=ps.executeQuery()){if(!r.next())throw new SQLException("Mesa inexistente");}
             }
-            try(PreparedStatement ps=cn.prepareStatement("SELECT id_producto FROM productos WHERE id_producto=? FOR UPDATE")) {
-                for(DetallePedido d:p.getDetalles()) { if(d.getIdProducto()<=0 || d.getCantidad()<=0)throw new SQLException("Detalle inválido"); ps.setInt(1,d.getIdProducto()); try(ResultSet r=ps.executeQuery()){if(!r.next())throw new SQLException("Producto inexistente");} }
+            try(PreparedStatement ps=cn.prepareStatement("SELECT id_producto FROM productos WHERE id_producto=? AND estado='Disponible' FOR UPDATE")) {
+                for(DetallePedido d:p.getDetalles()) { if(d.getIdProducto()<=0 || d.getCantidad()<=0)throw new SQLException("Detalle inválido"); ps.setInt(1,d.getIdProducto()); try(ResultSet r=ps.executeQuery()){if(!r.next())throw new SQLException("Producto inexistente o no disponible");} }
             }
 
             int idPedidoGenerado;
@@ -149,6 +149,14 @@ public class PedidoDAOMySQL implements PedidoRepositorio {
             if (idPedido == -1) {
                 cn.rollback();
                 return false;
+            }
+
+            // No eliminar pagos ni su historial al retirar un pedido ya cobrado.
+            try (PreparedStatement ps = cn.prepareStatement("SELECT id_pago FROM pagos WHERE id_pedido=? LIMIT 1 FOR UPDATE")) {
+                ps.setInt(1, idPedido);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) throw new SQLException("No se puede eliminar un pedido con pagos registrados.");
+                }
             }
 
             // Bloquea productos relacionados antes de retirar sus detalles.
