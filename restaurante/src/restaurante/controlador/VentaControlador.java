@@ -85,7 +85,12 @@ public class VentaControlador {
 
     /** Misma regla utilizada para crear la venta que se cobra y se guarda. */
     public double calcularTotal(Pedido pedido, MetodoPago metodo) {
-        return Aplicacion.venta().crearVenta(pedido, metodo).getTotal();
+        return calcularVenta(pedido, metodo).getTotal();
+    }
+
+    /** Calcula el desglose de la venta sin registrar ningún pago. */
+    public Venta calcularVenta(Pedido pedido, MetodoPago metodo) {
+        return Aplicacion.venta().crearVenta(pedido, metodo);
     }
 
     public void buscarVenta(int id) {
