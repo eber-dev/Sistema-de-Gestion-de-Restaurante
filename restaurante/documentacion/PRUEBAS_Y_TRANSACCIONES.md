@@ -9,10 +9,10 @@ El requisito acordado cuenta tablas consultadas y modificadas. Las lecturas no e
 | Operación | Tablas participantes | Cambios |
 |---|---|---|
 | Registrar pedido | `empleados`, `clientes`, `productos`, `pedidos`, `detalle_pedido`; `mesas` cuando corresponde | Consulta y bloquea datos relacionados; inserta pedido y detalles. |
-| Eliminar pedido | `pedidos`, `detalle_pedido`, `productos`, `pagos`, `pedido_eventos` | Consulta las filas relacionadas y elimina los registros asociados, como ya hacía la operación original. |
+| Eliminar pedido | `pedidos`, `detalle_pedido`, `productos`, `pagos`, `pedido_eventos`, `auditoria` | Comprueba que no existan pagos y elimina el pedido y sus detalles y eventos. Los pedidos con pagos se conservan. |
 | Registrar venta | `pedidos`, `detalle_pedido`, `productos`, `pagos`, `pedido_eventos`; `mesas` cuando corresponde | Inserta el pago y la auditoría, actualiza el pedido y, si corresponde, libera la mesa. |
 
-Las operaciones usan conexión JDBC, `setAutoCommit(false)`, `commit()` y `rollback()` ante fallos. El registro de pago y el cambio de estado se realizan en la misma conexión. Para ventas se verifica el estado del pedido y la existencia de pagos, y se bloquean filas para evitar operaciones concurrentes incompatibles. La eliminación conserva el comportamiento original y borra registros asociados: use una base de prueba para ensayarla.
+Las operaciones usan conexión JDBC, `setAutoCommit(false)`, `commit()` y `rollback()` ante fallos. El registro de pago y el cambio de estado se realizan en la misma conexión. Para ventas se verifica el estado del pedido y la existencia de pagos, y se bloquean filas para evitar operaciones concurrentes incompatibles. No se permite eliminar pedidos con pagos registrados; use una base de prueba para ensayar eliminaciones.
 
 No se implementó descuento de inventario: las tablas de ingredientes/inventario de la base original no incluyen una relación de recetas con los productos. Agregarla sin reglas de negocio inventaría una estructura y cantidades no definidas.
 

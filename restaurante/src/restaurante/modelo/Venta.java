@@ -16,9 +16,22 @@ public class Venta {
     private final double igv;
     private final double total;
     private final LocalDateTime fecha;
+    private final boolean desgloseDisponible;
 
     public Venta(int idVenta, Pedido pedido, MetodoPago metodoPago,
             double opvGravado, double descuento, double igv, double total) {
+        this(idVenta, pedido, metodoPago, opvGravado, descuento, igv, total, LocalDateTime.now(), true);
+    }
+
+    /** Venta recuperada: la tabla pagos no conserva el desglose histórico. */
+    public Venta(int idVenta, Pedido pedido, MetodoPago metodoPago,
+            double opvGravado, double descuento, double igv, double total, LocalDateTime fecha) {
+        this(idVenta, pedido, metodoPago, opvGravado, descuento, igv, total, fecha, false);
+    }
+
+    private Venta(int idVenta, Pedido pedido, MetodoPago metodoPago,
+            double opvGravado, double descuento, double igv, double total,
+            LocalDateTime fecha, boolean desgloseDisponible) {
         this.idVenta = idVenta;
         this.pedido = pedido;
         this.metodoPago = metodoPago;
@@ -26,7 +39,8 @@ public class Venta {
         this.descuento = descuento;
         this.igv = igv;
         this.total = total;
-        this.fecha = LocalDateTime.now();
+        this.fecha = fecha;
+        this.desgloseDisponible = desgloseDisponible;
     }
 
     public int getIdVenta() {
@@ -59,6 +73,10 @@ public class Venta {
 
     public LocalDateTime getFecha() {
         return fecha;
+    }
+
+    public boolean isDesgloseDisponible() {
+        return desgloseDisponible;
     }
 
     public void setIdVenta(int idVenta) {

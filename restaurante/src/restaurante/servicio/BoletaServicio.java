@@ -16,7 +16,7 @@ public class BoletaServicio {
     public String generar(Venta venta) {
         StringBuilder sb = new StringBuilder();
         sb.append("==========================================\n");
-        sb.append("      BOLETA DE VENTA ELECTRONICA\n");
+        sb.append("        BOLETA DE VENTA (SIMULADA)\n");
         sb.append("==========================================\n");
         sb.append(String.format("N B001-%08d%n", venta.getIdVenta()));
         sb.append("Fecha  : ").append(venta.getFecha().format(FORMATO)).append("\n");

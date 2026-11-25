@@ -208,7 +208,7 @@ public class FrmVenta extends JFrame {
         p.setOpaque(false);
         p.setBorder(BorderFactory.createEmptyBorder(0, 20, 18, 20));
 
-        JLabel nota = new JLabel("Selecciona un pedido y método de pago para cobrar.");
+        JLabel nota = new JLabel("<html>Selecciona un pedido y método de pago.<br>Tarjeta y billetera son simulaciones.</html>");
         nota.setForeground(new Color(100, 116, 139));
 
         JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 0));
@@ -255,6 +255,7 @@ public class FrmVenta extends JFrame {
 
     private void configurarEventos() {
         cboPedidos.addActionListener(e -> mostrarPedidoSeleccionado());
+        cboMetodoPago.addActionListener(e -> mostrarPedidoSeleccionado());
     }
 
     // ----------- ADAPTADO A TU Pedido/DetallePedido -----------
@@ -279,7 +280,16 @@ public class FrmVenta extends JFrame {
                     .append("\n");
         }
         txtDetalle.setText(sb.toString());
-        lblTotal.setText(String.format("S/ %.2f", pedido.calcularTotal()));
+        MetodoPago metodo = getMetodoPagoSeleccionado();
+        if (metodo == null) {
+            lblTotal.setText("S/ --");
+        } else {
+            try {
+                lblTotal.setText(String.format("S/ %.2f", controlador.calcularTotal(pedido, metodo)));
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                lblTotal.setText("S/ --");
+            }
+        }
     }
 
     private void buscar() {
@@ -322,7 +332,7 @@ public class FrmVenta extends JFrame {
                 v.getPedido().getCliente(),
                 v.getMetodoPago(),
                 String.format("S/ %.2f", v.getTotal()),
-                v.getFecha().format(f)
+                v.getFecha() == null ? "No registrada" : v.getFecha().format(f)
             });
         }
     }
@@ -336,15 +346,19 @@ public class FrmVenta extends JFrame {
     }
 
     public void mostrarDetalleVenta(Venta v) {
+        String desglose = v.isDesgloseDisponible()
+                ? "\nOPV    : S/ " + String.format("%.2f", v.getOpvGravado())
+                  + "\nDesc.  : S/ " + String.format("%.2f", v.getDescuento())
+                  + "\nIGV    : S/ " + String.format("%.2f", v.getIgv())
+                : "\nSubtotal del pedido: S/ " + String.format("%.2f", v.getOpvGravado())
+                  + "\nEl desglose histórico de descuento e IGV no está disponible.";
         String txt = "Venta #" + v.getIdVenta()
                 + "\nPedido : #" + v.getPedido().getCodigo()
                 + "\nCliente: " + v.getPedido().getCliente()
                 + "\nPago   : " + v.getMetodoPago()
-                + "\nOPV    : S/ " + String.format("%.2f", v.getOpvGravado())
-                + "\nDesc.  : S/ " + String.format("%.2f", v.getDescuento())
-                + "\nIGV    : S/ " + String.format("%.2f", v.getIgv())
+                + desglose
                 + "\nTOTAL  : S/ " + String.format("%.2f", v.getTotal())
-                + "\nFecha  : " + v.getFecha();
+                + "\nFecha  : " + (v.getFecha() == null ? "No registrada" : v.getFecha());
         JOptionPane.showMessageDialog(this, txt, "Detalle de venta",
                 JOptionPane.INFORMATION_MESSAGE);
     }

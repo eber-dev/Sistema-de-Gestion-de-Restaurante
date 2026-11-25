@@ -50,9 +50,16 @@ public class VentaControlador {
             return;
         }
 
+        double total;
+        try {
+            total = calcularTotal(pedido, metodo);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            vista.mostrarError(ex.getMessage());
+            return;
+        }
         int ok = JOptionPane.showConfirmDialog(vista,
                 "¿Cobrar el pedido #" + pedido.getCodigo()
-                + " por S/ " + String.format("%.2f", pedido.calcularTotal())
+                + " por S/ " + String.format("%.2f", total)
                 + " usando " + metodo + "?",
                 "Confirmar cobro", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
@@ -74,6 +81,11 @@ public class VentaControlador {
 
     public void actualizarHistorial() {
         vista.mostrarHistorial(Aplicacion.venta().listar());
+    }
+
+    /** Misma regla utilizada para crear la venta que se cobra y se guarda. */
+    public double calcularTotal(Pedido pedido, MetodoPago metodo) {
+        return Aplicacion.venta().crearVenta(pedido, metodo).getTotal();
     }
 
     public void buscarVenta(int id) {
